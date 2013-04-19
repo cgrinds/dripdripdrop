@@ -10,7 +10,7 @@ A web client for [Tiny Tiny Rss](http://tt-rss.org). It uses the [JSON API](http
 
 I'm a big fan of keyboard shortcuts - coupled with the right reader they let me rip through a lot of feeds quickly. Some things are only possible via keyboard shortcuts at the moment, I might change that in the future.
 
-You can see all of the shortcuts on the [About](https://github.com/cgrinds/dripdripdrop/screenshots/keys.png) screen.
+You can see all of the shortcuts on the [About](http://gstaff.org/dripdripdrop/screenshots/keys.png) screen.
 
 DripDripDrop takes a lot of inspiration fron [Newsbeuter](http://www.newsbeuter.org/), and a lot code and inspiration from [Lim Chee Aun](http://cheeaun.com/)'s [HackerWeb](http://hackerwebapp.com/).
 
@@ -61,8 +61,8 @@ DripDripDrop is using:
 
 Screenshots
 -----------
-<img src="gstaff.org/dripdripdrop/screenshots/feeds.png">
-<img src="gstaff.org/dripdripdrop/screenshots/article.png">
+<img src="http://gstaff.org/dripdripdrop/screenshots/feeds.png">
+<img src="http://gstaff.org/dripdripdrop/screenshots/article.png">
 
 Contributing and Feedback
 -------------------------

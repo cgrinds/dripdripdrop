@@ -33,7 +33,7 @@ You will need *Tiny Tiny RSS* installed on a machine, let's call that machine **
 
 Current Features
 ----------------
-<img src="http://gstaff.org/dripdripdrop/screenshots/keys.png" width="100px">
+<img src="http://gstaff.org/dripdripdrop/screenshots/keys.png">
 
 - feed favicons
 - link to original article

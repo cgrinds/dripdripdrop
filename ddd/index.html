@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<title>Drip Drip Drop</title>
+<meta name="apple-mobile-web-app-title" content="DripDripDrop">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="shortcut icon" href="icons/favicon.ico">
+<link rel="apple-touch-icon-precomposed" sizes="144x144" href="icons/touch-icon-144.png">
+<link rel="apple-touch-icon-precomposed" sizes="114x114" href="icons/touch-icon-114.png">
+<link rel="apple-touch-icon-precomposed" sizes="72x72" href="icons/touch-icon-72.png">
+<link rel="apple-touch-icon-precomposed" href="icons/touch-icon.png">
+
+<script src="assets/js/config.js"></script>
+<!-- 
+<script src="assets/js/libs/hogan.js"></script>
+<script src="assets/js/templates.js"></script>
+ -->
+<script src="assets/js/ddd.js"></script>
+
+<script>
+(function(d, ua){
+	var hasLocalStorage = false;
+	try {
+		hasLocalStorage = !!localStorage.getItem;
+	} catch(e) {}
+
+	var theme = 'web';
+	if (ua && /iPhone|iPod|iPad/.test(ua) && parseInt((ua.match(/ OS (\d+)_/i) || [,0])[1], 10) >= 5){
+		theme = 'ios';
+	}
+    window._ddd_theme = theme;
+	if (hasLocalStorage) theme = localStorage['ddd:options:theme'] || theme;
+	var head = d.head || d.getElementsByTagName('head')[0];
+
+	// Use document.write to prevent FOUC
+	d.write('<link rel="stylesheet" href="assets/css/ddd-' + theme + '.css">');
+    
+    var load = ['assets/js/libs-', 'assets/js/ddd-'];
+    for (var i = 0; i < load.length; i++) {
+        var script = d.createElement('script');
+        script.src = load[i] + theme + '.js';
+        head.insertBefore(script, head.lastChild);
+    }
+})(document, navigator.userAgent);
+</script>
+
+</head>
+<body>
+<!--[if lt IE 9]>
+	<p id="outdated-browser">You are using an outdated browser. <a href="http://browsehappy.com/">Upgrade your browser today</a> to better experience this site.</p>
+<![endif]-->
+<div id="apploader"></div>
+<div class="view hidden" id="view-home">
+	<header>
+		<a href="#/about" class="header-button header-button-left"><button>About</button></a>
+		<h1 style="margin: 0 65px;">Feeds</h1>
+		<a href="#/settings" class="header-button header-button-icon header-button-right" id="view-home-settings"><button><i class="icon-refresh">Settings</i></button></a>
+	</header>
+	<div class="msg"></div>
+	<div class="scroll">
+		<section>
+		</section>
+	</div>
+</div>
+<div class="view hidden" id="view-feeds">
+	<header>
+		<a href="#/about" class="header-button header-button-left"><button>About</button></a>
+		<h1 style="margin: 0 65px;">Drip Drip Drop</h1>
+	</header>
+	<div class="scroll">
+		<section>
+		</section>
+	</div>
+</div>
+<div class="view hidden" id="view-about">
+	<header>
+		<a href="#/" class="header-button header-button-left"><button>Close</button></a>
+		<h1>Drip Drip Drop</h1>
+	</header>
+	<div class="scroll striped">
+		<section>
+			<div class="grouped-tableview cf">
+				<span id="y-icon"></span>
+				<p id="app-desc"><strong>Drip Drip Drop</strong><br>A simple, fast, Tiny Tiny RSS reader.</p>
+			</div>
+            <ul class="grouped-tableview grouped-tableview-links">
+                <li><a href="http://tt-rss.org/redmine/projects/tt-rss/wiki" target="_blank" class="disclosure">Tiny Tiny RSS</a></li>
+                <li><a href="https://github.com/cgrinds/dripdripdrop" target="_blank" class="disclosure">DripDripDrop on GitHub</a></li>
+                <li><a href="mailto:cgrinds+ddd@gmail.com?subject=DripDripDrop feedback" class="disclosure">Send Feedback</a></li>
+            </ul>
+            <h3 class="title">Keyboard Shortcuts</h3>
+            <div class="columns twocols grouped-tableview">
+                <div class="column first">
+                  <h3>Feed shortcuts</h3>
+                  <dl class="keyboard-mappings">
+                    <dt>j</dt>
+                    <dd>Move selection down</dd>
+                  </dl>
+                  <dl class="keyboard-mappings">
+                    <dt>k</dt>
+                    <dd>Move selection up</dd>
+                  </dl>
+                  <dl class="keyboard-mappings">
+                    <dt>Enter</dt>
+                    <dd>Open selected</dd>
+                  </dl>
+                  <dl class="keyboard-mappings">
+                    <dt>i</dt>
+                    <dd>Return or go up</dd>
+                  </dl>
+                  <dl class="keyboard-mappings">
+                    <dt>g r</dt>
+                    <dd>Reload feeds</dd>
+                  </dl>
+                  <dl class="keyboard-mappings">
+                    <dt>l</dt>
+                    <dd>Toggle read/unread</dd>
+                  </dl>
+                </div>
+
+                <div class="column last">
+                  <h3>Action shortcuts</h3>
+                  <dl class="keyboard-mappings">
+                    <dt>o</dt>
+                    <dd>Open original article in new tab</dd>
+                  </dl>
+                  <dl class="keyboard-mappings">
+                    <dt>A</dt>
+                    <dd>Mark feed read</dd>
+                  </dl>
+                  <dl class="keyboard-mappings">
+                    <dt>N</dt>
+                    <dd>Mark unread</dd>
+                  </dl>
+                  <dl class="keyboard-mappings">
+                    <dt>+</dt>
+                    <dd>Add new feed</dd>
+                  </dl>
+                  <dl class="keyboard-mappings">
+                    <dt>d d</dt>
+                    <dd>Delete feed</dd>
+                  </dl>
+                </div>
+            </div>
+            <p class="foot-label">Built by <a href="http://gstaff.org">Chris Grindstaff</a> <br>Inspiration from Lim Chee Aun's <a href="http://cheeaun.github.io/hackerweb/">HackerWebApp</a></p>
+		</section>
+	</div>
+</div>
+<div class="view hidden" id="view-settings">
+	<header>
+		<a href="#/" class="header-button header-button-right"><button>Close</button></a>
+		<h1>Settings</h1>
+	</header>
+	<div class="scroll striped">
+		<section>
+            <p class="foot-label">Built by <a href="http://gstaff.org">Chris Grindstaff</a> <br>Inspiration from Lim Chee Aun's <a href="http://cheeaun.github.io/hackerweb/">HackerWebApp</a></p>
+		</section>
+	</div>
+</div>
+
+<div class="view hidden" id="view-feed">
+	<header>
+		<a href="#/" class="header-button header-button-left"><button>Feeds</button></a>
+		<h1 style="margin: 0 65px;"></h1>
+		<!--<a class="header-button header-button-icon header-button-right" id="view-home-refresh"><button><i class="icon-refresh">Refresh</i></button></a>-->
+	</header>
+	<div class="scroll headlines">
+		<section>
+		</section>
+	</div>
+    <a href="#" id="opener" class="view hidden" target="_blank"></a>
+</div>
+<div class="view hidden" id="view-article">
+	<header>
+		<a href="#/" class="header-button header-button-left header-back-button"><button>Back</button></a>
+		<h1 style="margin: 0 65px;"></h1>
+	</header>
+	<div class="scroll">
+		<section>
+		</section>
+	</div>
+</div>
+<div class="view hidden" id="view-login">
+	<header>
+		<a href="#/" class="header-button header-button-left header-back-button"><button>Back</button></a>
+		<h1 style="margin: 0 65px;">Login</h1>
+	</header>
+	<div class="scroll striped">
+	</div>
+</div>
+<script>
+(function(ua){
+    if (ua && /Windows/.test(ua)) {
+        var ss = document.styleSheets[0];
+        var rules = ss.cssRules || ss.rules;
+        var selRule = null;
+        for (var i = 0; i < rules.length; i++) {
+            var rule = rules[i];
+            if(/sel/.test(rule.selectorText)) {
+                selRule = rule;
+                break;
+            }
+        } 
+        if(selRule !== null) 
+            selRule.style.backgroundColor = "DAE6F6";
+    }
+})(navigator.userAgent);
+</script>
+</body>
+</html>

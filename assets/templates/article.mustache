@@ -1,0 +1,15 @@
+<div class="post-content">
+    <header>
+        <h1>
+            <a id="full_article" href="{{link}}" target="_blank">{{{title}}}<br>
+            </a>
+        </h1>
+        <p class="metadata">
+            <span class="inline-block">{{date}} {{#author}}by {{author}}{{/author}} </span> 
+            <span class="inline-block">{{time_ago}}{{#comments_count}} &middot; {{comments_count}} {{i_comment}}{{/comments_count}}</span>
+        </p>
+    </header>
+    <section class="grouped-tableview">
+        {{{content}}}
+    </section>
+</div>

@@ -1,0 +1,15 @@
+{{#icon}}
+<img class="fav" src="{{icon}}{{id}}.ico">
+{{/icon}}
+{{^icon}}
+<div class="number">{{i}}.</div>
+{{/icon}}
+<div class="feed">
+    <b>{{{title}}}</b>
+    {{#updated}}
+        <span class="metadata">
+            <span class="inline-block">{{updated}}</span> 
+        </span>
+    {{/updated}}
+</div>
+

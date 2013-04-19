@@ -7,7 +7,11 @@ build
 private
 node_modules
 
+# Local files
+assets/js/config.local.js
+
 # Generated files
 assets/js/templates.js
 assets/js/libs-web.js
 assets/js/libs-ios.js
+

@@ -9,6 +9,7 @@ node_modules
 
 # Local files
 assets/js/config.js
+assets/js/config-ddd.js
 
 # Generated files
 assets/js/templates.js

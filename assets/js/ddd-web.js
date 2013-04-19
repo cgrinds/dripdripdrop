@@ -76,6 +76,9 @@ dddns['ddd-plat'] = function(w) {
         if (e.keyCode === 13)
             ddd.login.doLogin();
     });
+    $('#view-login').on('click', '#login', function(e) {
+        ddd.login.doLogin();
+    });
     $('#view-home').on('click', '.question .delete', function(e) {
         ddd.feeds.removeFeedsInline(false);
     });

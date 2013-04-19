@@ -8,7 +8,7 @@ private
 node_modules
 
 # Local files
-assets/js/config.local.js
+assets/js/config.js
 
 # Generated files
 assets/js/templates.js

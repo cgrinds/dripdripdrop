@@ -1,3 +1,4 @@
+<img src="http://gstaff.org/dripdripdrop/icons/favicon-144.png">
 Drip Drip Drop
 ==============
 

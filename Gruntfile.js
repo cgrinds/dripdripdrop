@@ -64,7 +64,6 @@ module.exports = function(grunt) {
 						'assets/js/libs/ruto.js',
 						'assets/js/libs/amplify.store.js',
 						'assets/js/libs/hogan.js',
-						'assets/js/libs/ttrss-api.js',
 						'assets/js/libs/tappable.js',
 						'assets/js/libs/tween.js',
 						'assets/js/libs/requestanimationframe.js',
@@ -92,13 +91,6 @@ module.exports = function(grunt) {
         },
         nonull: true,
       },
-
-      //dist: {
-        //files: {
-          //'build/assets/js/ddd.js' : ['assets/js/templates.js', 'assets/js/ddd.js'],
-        //},
-        //nonull: true,
-      //}
     },
     
     replace: {
@@ -141,9 +133,11 @@ module.exports = function(grunt) {
     copy: {
       prod: {
         files: [
-          {expand: true, src: ['assets/js/config.js', 'assets/js/ddd-*'], dest: 'build'},
+          {expand: true, src: ['assets/js/config-dist.js', 'assets/js/ddd-*'], dest: 'build'},
           {expand: true, src: ['assets/js/libs-*'], dest: 'build'},
-          {expand: true, src: ['assets/css/*', 'assets/images/**'], dest: 'build'},
+          {expand: true, src: ['assets/css/*', 'assets/images/**', 'assets/icons/**'], dest: 'build'},
+          // this is just for local testing
+          {expand: true, src: ['assets/js/config.js'], dest: 'build'},
         ]
       }
     },

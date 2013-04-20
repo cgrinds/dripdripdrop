@@ -18,59 +18,56 @@ module.exports = function(grunt) {
 
   var libWeb = libCommon.slice(0);
   libWeb.push.apply(libWeb, andWeb);
+  var uglifyWeb = libWeb.slice(0);
+  uglifyWeb.push('assets/js/templates.js');
+  uglifyWeb.push('assets/js/ddd.js');
+  uglifyWeb.push('assets/js/ddd-web.js');
+  console.log('uglifyWeb=', uglifyWeb);
 
   var libIos = libCommon.slice(0);
   libIos.push.apply(libIos, andIos);
+  var uglifyIos = libIos.slice(0);
+  uglifyIos.push('assets/js/templates.js');
+  uglifyIos.push('assets/js/ddd.js');
+  uglifyIos.push('assets/js/ddd-ios.js');
+  console.log('uglifyIos=', uglifyIos);
  
   var tmpl = grunt.file.read('assets/js/templates.js');
   var hashes = grunt.file.readJSON('hashes.json');
+
+  var to_copy = [
+    'assets/js/config-dist.js',
+    'assets/css/*',
+    'assets/images/**',
+    'assets/icons/**',
+  ];
 
 	grunt.initConfig({
 		pkg: grunt.file.readJSON('package.json'),
 		uglify: {
 			web: {
 				options: {
-					sourceMap: 'js/ddd-web.min.js.map',
+					sourceMap: 'ddd.min/ddd.min.web.js.map',
 					sourceMappingURL: function(path){
 						return path.replace(/^js\//i, '') + '.map';
 					},
 					sourceMapRoot: '../'
 				},
 				files: {
-					'js/ddd-web.min.js': [
-						'assets/js/libs/zepto.js',
-						'assets/js/libs/ruto.js',
-						'assets/js/libs/amplify.store.js',
-						'assets/js/libs/hogan.js',
-						'assets/js/libs/ttrss-api.js',
-						'assets/js/templates.js',
-						'assets/js/ddd.js',
-						'assets/js/ddd-web.js'
-					]
+					'ddd.min/ddd.min.web.js': uglifyWeb
 				}
 			},
 
 			ios: {
 				options: {
-					sourceMap: 'js/ddd-ios.min.js.map',
+					sourceMap: 'ddd.min/ddd.min.ios.js.map',
 					sourceMappingURL: function(path){
 						return path.replace(/^js\//i, '') + '.map';
 					},
 					sourceMapRoot: '../'
 				},
 				files: {
-					'js/ddd-ios.min.js': [
-						'assets/js/libs/zepto.js',
-						'assets/js/libs/ruto.js',
-						'assets/js/libs/amplify.store.js',
-						'assets/js/libs/hogan.js',
-						'assets/js/libs/tappable.js',
-						'assets/js/libs/tween.js',
-						'assets/js/libs/requestanimationframe.js',
-						'assets/js/templates.js',
-						'assets/js/ddd.js',
-						'assets/js/ddd-ios.js'
-					]
+					'ddd.min/ddd.min.ios.js': uglifyIos
 				}
 			}
 		},
@@ -91,10 +88,22 @@ module.exports = function(grunt) {
         },
         nonull: true,
       },
+
+      web_debug: {
+        files: {
+					'ddd.debug/ddd.web.js': uglifyWeb,
+        }
+      },
+      ios_debug: {
+        files: {
+					'ddd.debug/ddd.ios.js': uglifyIos,
+        }
+      }
+      
     },
     
     replace: {
-      index: {
+      index_common: {
         src: ['index.html'],
         dest: 'build/index.html',
         replacements: [{
@@ -105,7 +114,24 @@ module.exports = function(grunt) {
           to: ''
         }]
       },
-
+      index_web_min: {
+        src: ['build/index.html'],
+        dest: 'ddd.min/index.html',
+        replacements: [{
+          from: /\/\/XXX_toload(.|[\n\r])*\/\/XXX_toload_end/,
+          to: "var load = ['ddd.min.'];",
+        },
+        ]
+      },
+      index_web: {
+        src: ['build/index.html'],
+        dest: 'ddd.debug/index.html',
+        replacements: [{
+          from: /\/\/XXX_toload(.|[\n\r])*\/\/XXX_toload_end/,
+          to: "var load = ['ddd.'];",
+        },
+        ]
+      },
       templates: {
         src: ['assets/js/ddd.js'],
         dest: 'build/assets/js/ddd.js',
@@ -114,28 +140,19 @@ module.exports = function(grunt) {
           to: tmpl,
         },]
       },
-
-      rev: {
-        src: ['build/index.html'],
-        dest: 'build/index-rev.html',
-        replacements: [{
-          from: 'config.js',
-          to: 'config_' + hashes['config.js'].val + '.js',
-        },
-        {
-          from: 'ddd.js',
-          to: 'ddd_' + hashes['ddd.js'].val + '.js',
-        },
-        ]
-      },
     },
     
     copy: {
       prod: {
         files: [
-          {expand: true, src: ['assets/js/config-dist.js', 'assets/js/ddd-*'], dest: 'build'},
-          {expand: true, src: ['assets/js/libs-*'], dest: 'build'},
-          {expand: true, src: ['assets/css/*', 'assets/images/**', 'assets/icons/**'], dest: 'build'},
+          {expand: true, src: to_copy, dest: 'ddd.min'},
+          // this is just for local testing
+          {expand: true, src: ['assets/js/config.js'], dest: 'build'},
+        ]
+      },
+      debug: {
+        files: [
+          {expand: true, src: to_copy, dest: 'ddd.debug'},
           // this is just for local testing
           {expand: true, src: ['assets/js/config.js'], dest: 'build'},
         ]
@@ -148,4 +165,13 @@ module.exports = function(grunt) {
 	grunt.loadNpmTasks('grunt-contrib-concat');
   grunt.loadNpmTasks('grunt-text-replace');
   grunt.loadNpmTasks('grunt-contrib-copy');
+
+
+  grunt.registerTask('prod', 
+    ['replace:templates', 'replace:index_common', 'replace:index_web_min',
+      'uglify:web', 'uglify:ios', 'copy:prod']);
+
+  grunt.registerTask('prod-debug', 
+    ['replace:templates', 'replace:index_common', 'replace:index_web', 
+      'concat:web_debug', 'concat:ios_debug', 'copy:debug']);
 };

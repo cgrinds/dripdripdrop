@@ -4,24 +4,20 @@ import os
 import re
 import urllib2
 
-def prepare_files():
-    local('grunt replace:templates')
-    local('grunt replace:index')
-    local('grunt copy:prod')
+def upload_debug():
+    run("mkdir -p ddd.debug")
+    put('ddd.debug/*', '~/ddd.debug')
 
-def upload_common():
-    put('build/assets', '~/feeds/src/client')
-    put('build/index.html', '~/feeds/src/client')
-
-def upload_ddd():
-    put('build/assets', '~/ddd')
-    put('build/index.html', '~/ddd')
+def upload_min():
+    run("mkdir -p ddd.min")
+    put('ddd.min/*', '~/ddd.min')
 
 @roles('prod')
 def gstaff():
-  prepare_files()
-  upload_common()
-  upload_ddd()
+  local('grunt prod')
+  local('grunt prod-debug')
+  upload_min()
+  upload_debug()
 
-  #put('assets/js/config.gstaff.js', '~/feeds/src/client/assets/js/config.js')
-  put('assets/js/config-ddd.js', '~/ddd/assets/js/config.js')
+  put('assets/js/config-ddd.js', '~/ddd.min/assets/js/config.js')
+  put('assets/js/config-ddd.js', '~/ddd.debug/assets/js/config.js')

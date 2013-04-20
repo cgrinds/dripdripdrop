@@ -53,10 +53,10 @@ dddns['ddd-plat'] = function(w) {
     w.addEventListener('orientationchange', adjustViewsHeight, false);
     adjustViewsHeight();
 
-    $('#view-home-settings').on('click', function(e, target) {
+    $('#view-home-settings').on('click', function(e) {
         ddd.feeds.settings();
     });
-    $('#view-home .more-link').on('click', function(e, target) {
+    $('#view-home .more-link').on('click', function(e) {
         ddd.feeds.moreFeeds(target);
     });
     $('#view-feed').on('click', '.more-link', function(e) {
@@ -75,6 +75,9 @@ dddns['ddd-plat'] = function(w) {
     $('#view-login').on('keydown', 'input', function(e) {
         if (e.keyCode === 13)
             ddd.login.doLogin();
+    });
+    $('#view-login').on('click', '#login', function(e) {
+      ddd.login.doLogin();
     });
     $('#view-home').on('click', '.question .delete', function(e) {
         ddd.feeds.removeFeedsInline(false);
@@ -170,18 +173,15 @@ dddns['ddd-plat'] = function(w) {
     addKeyboardShortcuts();
     ddd.init();
 };
-if (!dddns['poll']) {
-    var poll = function() {
-        if (dddns['ddd-plat'] && dddns['ddd'] && dddns['lib']) {
-            // everything is loaded
-            console.log('everything is loaded');
-            dddns['ddd'](window);
-            dddns['ddd-plat'](window);
-            dddns['poll'] = 1;
-        } else {
-            setTimeout(dddns['poll'], 75);
-        }
-    };
-    dddns['poll'] = poll;
-    setTimeout(poll, 75);
-}
+var poll = function() {
+    if (window._ddd_config) {
+        console.log('everything is loaded');
+        dddns['ddd'](window);
+        dddns['ddd-plat'](window);
+        dddns['poll'] = 1;
+    } else {
+        setTimeout(dddns['poll'], 75);
+    }
+};
+dddns['poll'] = poll;
+setTimeout(poll, 75);

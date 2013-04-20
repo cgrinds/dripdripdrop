@@ -6,18 +6,18 @@
 <title>Drip Drip Drop</title>
 <meta name="apple-mobile-web-app-title" content="DripDripDrop">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="shortcut icon" href="icons/favicon.ico">
-<link rel="apple-touch-icon-precomposed" sizes="144x144" href="icons/touch-icon-144.png">
-<link rel="apple-touch-icon-precomposed" sizes="114x114" href="icons/touch-icon-114.png">
-<link rel="apple-touch-icon-precomposed" sizes="72x72" href="icons/touch-icon-72.png">
-<link rel="apple-touch-icon-precomposed" href="icons/touch-icon.png">
+<link rel="shortcut icon" href="assets/icons/favicon.ico">
+<link rel="apple-touch-icon-precomposed" sizes="144x144" href="assets/icons/touch-icon-144.png">
+<link rel="apple-touch-icon-precomposed" sizes="114x114" href="assets/icons/touch-icon-114.png">
+<link rel="apple-touch-icon-precomposed" sizes="72x72" href="assets/icons/touch-icon-72.png">
+<link rel="apple-touch-icon-precomposed" href="assets/icons/touch-icon.png">
 
 <script src="assets/js/config.js"></script>
 <!-- 
 <script src="assets/js/libs/hogan.js"></script>
 <script src="assets/js/templates.js"></script>
- -->
 <script src="assets/js/ddd.js"></script>
+ -->
 
 <script>
 (function(d, ua){
@@ -37,12 +37,13 @@
 	// Use document.write to prevent FOUC
 	d.write('<link rel="stylesheet" href="assets/css/ddd-' + theme + '.css">');
     
-    var load = ['assets/js/libs-', 'assets/js/ddd-'];
+    var load = ['ddd.min.'];
     for (var i = 0; i < load.length; i++) {
         var script = d.createElement('script');
         script.src = load[i] + theme + '.js';
         head.insertBefore(script, head.lastChild);
     }
+    //XXX_min_cut_end
 })(document, navigator.userAgent);
 </script>
 
@@ -190,6 +191,7 @@
 	<div class="scroll striped">
 	</div>
 </div>
+<!--YYYY_DDD-->
 <script>
 (function(ua){
     if (ua && /Windows/.test(ua)) {

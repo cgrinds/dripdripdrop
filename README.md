@@ -20,17 +20,19 @@ Installation and Usage
 
 You will need *Tiny Tiny RSS* installed on a machine, let's call that machine **ttrss-server** with a domain name of *example.com*.
 
-1. Add the `ddd` directory to *ttrss-server*. There is no CORs support at the moment so it needs to be on the same host.
+1. Pick either the minified version `ddd.min` or the non-minified debug version `ddd-debug`.
 
-2. Copy `ddd/config-dist.js` to `ddd/config.js`.
+2. Move that folder to your *ttrss-server* server and rename it to `ddd`. **There is no CORs support at the moment so it needs to be on the same host.**
 
-3. Edit `ddd/config.js` and update the `api` to point to your **ttrss-server**'s API end-point. This is usually something like `http://example.com/tt-rss/`.
+3. Copy `ddd/config-dist.js` to `ddd/assets/js/config.js`.
 
-4. Enable API access for each user that plans on using DripDripDrop:
+4. Edit the `config.js` and update the `api` to point to your **ttrss-server**'s API end-point. This is usually something like `http://example.com/tt-rss/`.
+
+5. Enable API access for each user that plans on using DripDripDrop:
     * in *Tiny Tiny RSS* open the preferences by navigating to `Actions` -> `Preferences`
     * Make sure the `Enable API access` checkbox is selected
      
-5. Profit!!! or at least read your feeds.
+6. Profit!!! or at least read your feeds.
 
 Current Features
 ----------------

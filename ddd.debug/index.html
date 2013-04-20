@@ -13,11 +13,11 @@
 <link rel="apple-touch-icon-precomposed" href="assets/icons/touch-icon.png">
 
 <script src="assets/js/config.js"></script>
-<!-- prod cut begin -->
+<!-- 
 <script src="assets/js/libs/hogan.js"></script>
 <script src="assets/js/templates.js"></script>
 <script src="assets/js/ddd.js"></script>
-<!--xxxx -->
+ -->
 
 <script>
 (function(d, ua){
@@ -37,9 +37,7 @@
 	// Use document.write to prevent FOUC
 	d.write('<link rel="stylesheet" href="assets/css/ddd-' + theme + '.css">');
     
-    //XXX_toload
-    var load = ['assets/js/libs-', 'assets/js/ddd-'];
-    //XXX_toload_end
+    var load = ['ddd.'];
     for (var i = 0; i < load.length; i++) {
         var script = d.createElement('script');
         script.src = load[i] + theme + '.js';

@@ -3969,6 +3969,16 @@ dddns['ddd'] = function(w) {
     ddd.feed = {
         currentID: null,
         currentHeadlines: null,
+        renderTitle: function(feed, siz) {
+            var hasIcon = feed.has_icon && ddd.config.iconPath;
+            if (hasIcon) {
+              $(siz).html('<img class="fav" src=' + ddd.config.iconPath + feed.id + ".ico>" +
+                feed.title);
+            } else {
+              $(siz).html(feed.title);
+            }
+        },
+
         render: function(_id, _feed) {
             if (!_id) return;
 
@@ -3988,7 +3998,7 @@ dddns['ddd'] = function(w) {
                 feed = amplify.store('feeds-by-id')[id];
             }
             if (feed)
-                $('#view-feed h1').html(feed.title);
+                ddd.feed.renderTitle(feed, '#view-feed h1')
 
             var unread_only = amplify.store('view-mode');
             loadingHeadlines = true;
@@ -4177,7 +4187,7 @@ dddns['ddd'] = function(w) {
             if (!article) return;
             ddd.article.currentArticle = article;
             var feed = amplify.store('feeds-by-id')[ddd.feeds.currentID];
-            $('#view-article h1').html(feed.title);
+            ddd.feed.renderTitle(feed, '#view-article h1')
             ddd.feed.markRead(article, index);
 
             article.hasContent = true;
@@ -4404,6 +4414,7 @@ dddns['ddd'] = function(w) {
             ruto.go('/');
             return;
         }
+        ddd.feed.showSelection();
     };
 
     ddd.cmd_click_feed = function(target) {

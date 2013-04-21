@@ -74,6 +74,13 @@ header.fake{
 .header-fake{
 	z-index: 1;
 }
+.tableview-links .fav{
+	position: absolute;
+	left:10px;
+	top: 12px;
+    width: 16px;
+    height: 16px;
+}
 header.fake,
 .view>header{
 	background: #b2bbca url(../images/ios/nav-bar.png) repeat-x;

@@ -320,6 +320,11 @@ dl.keyboard-mappings dd {
     width: 16px;
     height: 16px;
 }
+h1 .fav{
+    width: 16px;
+    height: 16px;
+    padding: 0px 8px 0 0;
+}
 .tableview-links .number{
 	text-align: right;
 	width: 3.7ex;

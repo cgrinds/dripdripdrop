@@ -1147,6 +1147,7 @@ dddns['ddd'] = function(w) {
             ruto.go('/');
             return;
         }
+        ddd.feed.showSelection();
     };
 
     ddd.cmd_click_feed = function(target) {

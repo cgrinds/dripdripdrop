@@ -24,7 +24,7 @@ You will need *Tiny Tiny RSS* installed on a machine, let's call that machine **
 
 2. Move that folder to your *ttrss-server* server and rename it to `ddd`. **There is no CORs support at the moment so it needs to be on the same host.**
 
-3. Copy `ddd/config-dist.js` to `ddd/assets/js/config.js`.
+3. Copy `ddd/assets/js/config-dist.js` to `ddd/assets/js/config.js`.
 
 4. Edit the `config.js` and update the `api` to point to your **ttrss-server**'s API end-point. This is usually something like `http://example.com/tt-rss/`.
 

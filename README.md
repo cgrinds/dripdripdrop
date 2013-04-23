@@ -38,6 +38,7 @@ Current Features
 ----------------
 <img src="http://gstaff.org/dripdripdrop/screenshots/keys.png">
 
+- when you mark a feed read, moves you back to the list of feeds instead of leaving you on a blank page
 - feed favicons
 - link to original article
 - mark all read

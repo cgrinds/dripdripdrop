@@ -42,14 +42,13 @@ module.exports = function(grunt) {
     'assets/icons/**',
   ];
 
+  var pkg = grunt.file.readJSON('package.json');
 	grunt.initConfig({
-		pkg: grunt.file.readJSON('package.json'),
 		uglify: {
 			web: {
 				options: {
 					sourceMap: 'ddd.min/ddd.min.web.js.map',
 					sourceMappingURL: function(path){
-            console.log('path is', path);
             // path is ddd.min/ddd.min.web.js
 						return path.slice(8) + '.map';
 					},
@@ -169,6 +168,30 @@ module.exports = function(grunt) {
         ]
       }
     },
+
+    compress: {
+      dist: {
+        options: {
+          mode: 'tgz',
+          archive: 'dist/ddd-' + pkg.version + '.tgz'
+        },
+        expand: true,
+        cwd: 'ddd.min',
+        src: ['**/*'],
+        dest: 'ddd',
+      },
+      debug: {
+        options: {
+          mode: 'tgz',
+          archive: 'dist/ddd-debug-' + pkg.version + '.tgz'
+        },
+        expand: true,
+        cwd: 'ddd.debug',
+        src: ['**/*'],
+        dest: 'ddd',
+      }
+      
+    },
 	});
 
 	grunt.loadNpmTasks('grunt-contrib-uglify');
@@ -176,12 +199,13 @@ module.exports = function(grunt) {
 	grunt.loadNpmTasks('grunt-contrib-concat');
   grunt.loadNpmTasks('grunt-text-replace');
   grunt.loadNpmTasks('grunt-contrib-copy');
-
+  grunt.loadNpmTasks('grunt-contrib-compress');
 
   grunt.registerTask('prod', 
-    ['prod-debug', 'replace:index_web_min', 'uglify:web', 'uglify:ios', 'copy:prod', 'replace:sourcemap']);
+    ['prod-debug', 'replace:index_web_min', 'uglify:web', 'uglify:ios', 'copy:prod', 
+      'replace:sourcemap', 'compress:dist']);
 
   grunt.registerTask('prod-debug', 
     ['replace:templates', 'replace:index_common', 'replace:index_web', 
-      'concat:web_debug', 'concat:ios_debug', 'copy:debug']);
+      'concat:web_debug', 'concat:ios_debug', 'copy:debug', 'compress:debug']);
 };

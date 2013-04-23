@@ -18,15 +18,15 @@ DripDripDrop takes a lot of inspiration fron [Newsbeuter](http://www.newsbeuter.
 Installation and Usage
 ----------------------
 
-You will need *Tiny Tiny RSS* installed on a machine, let's call that machine **ttrss-server** with a domain name of *example.com*.
+You will need *Tiny Tiny RSS* installed on a machine, let's call that machine **ttrss-server**.
 
-1. Pick either the minified version `ddd.min` or the non-minified debug version `ddd-debug`.
+1. Grab the latest release from from `https://github.com/cgrinds/dripdripdrop/tree/master/dist`.  
 
-2. Move that folder to your *ttrss-server* server and rename it to `ddd`. **There is no CORs support at the moment so it needs to be on the same host.**
+2. Untar the release on *ttrss-server* (for example tar xvf ddd-0.4.2.tgz). **There is no CORs support at the moment so it needs to be on the same host.**
 
 3. Copy `ddd/assets/js/config-dist.js` to `ddd/assets/js/config.js`.
 
-4. Edit the `config.js` and update the `api` to point to your **ttrss-server**'s API end-point. This is usually something like `http://example.com/tt-rss/`.
+4. Edit the `config.js` and update the `api` to point to your **ttrss-server**'s API end-point. This is usually something like `/tt-rss/`.
 
 5. Enable API access for each user that plans on using DripDripDrop:
     * in *Tiny Tiny RSS* open the preferences by navigating to `Actions` -> `Preferences`

@@ -15,4 +15,6 @@ assets/js/config-ddd.js
 assets/js/templates.js
 assets/js/libs-web.js
 assets/js/libs-ios.js
+ddd.min
+ddd.debug
 

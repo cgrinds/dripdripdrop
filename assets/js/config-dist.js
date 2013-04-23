@@ -1,6 +1,6 @@
 (function(d){
   config = {
-    api:'http://example.com/tt-rss/api/',
+    api:'/tt-rss/api/',
 
     // FEED_LIMIT does not really work with unread only since the unread check
     // is done in code after the db query that includes a limit. there will be missed

@@ -20,9 +20,9 @@ Installation and Usage
 
 You will need *Tiny Tiny RSS* installed on a machine, let's call that machine **ttrss-server**.
 
-1. Grab the latest release from from `https://github.com/cgrinds/dripdripdrop/tree/master/dist`.  
+1. Grab the latest [release](https://github.com/cgrinds/dripdripdrop/tree/master/dist).
 
-2. Untar the release on *ttrss-server* (for example tar xvf ddd-0.4.2.tgz). **There is no CORs support at the moment so it needs to be on the same host.**
+2. Untar the release on **ttrss-server** (for example tar xvf ddd-0.4.2.tgz). **There is no CORs support at the moment so it needs to be on the same host.**
 
 3. Copy `ddd/assets/js/config-dist.js` to `ddd/assets/js/config.js`.
 

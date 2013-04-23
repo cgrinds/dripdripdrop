@@ -49,12 +49,14 @@ module.exports = function(grunt) {
 				options: {
 					sourceMap: 'ddd.min/ddd.min.web.js.map',
 					sourceMappingURL: function(path){
-						return path.replace(/^js\//i, '') + '.map';
+            console.log('path is', path);
+            // path is ddd.min/ddd.min.web.js
+						return path.slice(8) + '.map';
 					},
-					sourceMapRoot: '../'
+					sourceMapRoot: '.',
 				},
 				files: {
-					'ddd.min/ddd.min.web.js': uglifyWeb
+					'ddd.min/ddd.min.web.js': 'ddd.min/ddd.web.js'
 				}
 			},
 
@@ -140,6 +142,14 @@ module.exports = function(grunt) {
           to: tmpl,
         },]
       },
+      sourcemap: {
+        src: ['ddd.min/ddd.min.web.js.map'],
+        overwrite: true,
+        replacements: [{
+          from: 'ddd.min/ddd.web.js',
+          to:   'ddd.web.js',
+        },]
+      },
     },
     
     copy: {
@@ -153,6 +163,7 @@ module.exports = function(grunt) {
       debug: {
         files: [
           {expand: true, src: to_copy, dest: 'ddd.debug'},
+          {expand: true, flatten: true, src: 'ddd.debug/ddd.web.js', dest: 'ddd.min/'}, // for source map support
           // this is just for local testing
           {expand: true, src: ['assets/js/config.js'], dest: 'build'},
         ]
@@ -168,8 +179,7 @@ module.exports = function(grunt) {
 
 
   grunt.registerTask('prod', 
-    ['replace:templates', 'replace:index_common', 'replace:index_web_min',
-      'uglify:web', 'uglify:ios', 'copy:prod']);
+    ['prod-debug', 'replace:index_web_min', 'uglify:web', 'uglify:ios', 'copy:prod', 'replace:sourcemap']);
 
   grunt.registerTask('prod-debug', 
     ['replace:templates', 'replace:index_common', 'replace:index_web', 

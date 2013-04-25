@@ -941,8 +941,6 @@ dddns['ddd'] = function(w) {
             if (article.updated) {
                 article.date = ddd.formatDate(article.updated, true);
             }
-            back = '#/feed/' + article.feed_id;
-            $('#view-article .header-back-button').attr('href', back);
 
             var tmpl1 = tmpl('article');
             $('#view-article .scroll').html(tmpl1.render(article));
@@ -1299,11 +1297,14 @@ dddns['ddd'] = function(w) {
         notfound: function() {
             ruto.go('/');
         }
-    })
+        })
         .add('/', 'home', function(path) {
-        ddd.feed.showSelection();
-    })
+          ddd.feed.showSelection();
+        })
         .add('/about', 'about')
+        .add('/back', 'back', function(){
+          ddd.cmd_goUp();
+        })
         .add('/settings', 'settings')
         .add('/login', 'login')
         .add('/login_submit', function(path) {

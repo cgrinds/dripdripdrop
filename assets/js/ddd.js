@@ -426,18 +426,21 @@ dddns['ddd'] = function(w) {
         },
 
         more: function(target) {
-            console.log('more target is', target);
             $(target).addClass('loading');
             var feed_id = ddd.feeds.currentID;
             if (!feed_id) return;
             var unread_only = amplify.store('view-mode');
-
+            var skipBy = ddd.feeds.skip;
+            if(ddd.feed.currentHeadlines) {
+              skipBy = ddd.feed.currentHeadlines.length;
+            }
+            
             msg = {
                 op: "getHeadlines",
                 feed_id: "" + feed_id,
                 show_content: "true",
                 view_mode: unread_only ? "unread" : "",
-                skip: "" + ddd.feeds.skip,
+                skip: "" + skipBy,
                 limit: "" + ddd.config.ARTICLE_LIMIT,
             };
             var feedsById = amplify.store('feeds-by-id');
@@ -452,7 +455,7 @@ dddns['ddd'] = function(w) {
                 if (!_data) return;
                 var data = _data.slice();
                 if (ddd.feed.currentHeadlines) ddd.feed.currentHeadlines.push.apply(ddd.feed.currentHeadlines, data);
-                var html = ddd.feeds.markupHeadlines(data, ddd.feeds.skip + 1);
+                var html = ddd.feeds.markupHeadlines(data, skipBy + 1);
                 // do we still need more?
                 html += data.length >= ddd.config.ARTICLE_LIMIT ?
                     '<li><a class="more-link">More&hellip;<span class="loader"></span></a></li>' : '' +
@@ -710,7 +713,6 @@ dddns['ddd'] = function(w) {
     };
 
     ddd.feed = {
-        currentID: null,
         currentHeadlines: null,
         renderTitle: function(feed, siz) {
             var hasIcon = feed.has_icon && ddd.config.iconPath;
@@ -787,15 +789,17 @@ dddns['ddd'] = function(w) {
             var data = _data.slice(),
                 tmpl1 = tmpl('feeds-load');
             ddd.feed.currentHeadlines = data;
+            var moreOnPage = $('.more-link').length > 0;
             var html = '<ul class="tableview tableview-links" id="dddlist">' +
                 ddd.feeds.markupHeadlines(data) +
-                (data.length >= ddd.config.ARTICLE_LIMIT ?
+                (moreOnPage || data.length >= ddd.config.ARTICLE_LIMIT ?
                 '<li><a class="more-link">More&hellip;<span class="loader"></span></a></li>' : '') +
                 '</ul>';
-            if (data.length >= ddd.config.ARTICLE_LIMIT) {
+            if (!moreOnPage && data.length >= ddd.config.ARTICLE_LIMIT) {
                 var next = ddd.feeds.skip;
                 if (!next) next = 0;
                 ddd.feeds.skip = next + ddd.config.ARTICLE_LIMIT;
+                console.log('increase skip to', ddd.feeds.skip)
             }
             $('#view-feed .scroll').html(html);
             ddd.pub('adjustCommentsSection');
@@ -946,8 +950,51 @@ dddns['ddd'] = function(w) {
 
         cmd_next: function(dir) {
             if (ddd.currentView !== 'article') return;
-            console.log('article.cmd_next dir=', dir, ddd.currentView);
-
+            var sel = ddd.getSel('feed');
+            var unread_only = amplify.store('view-mode');
+            if(dir == 1) {
+                // the article we're looking at has already been removed from currentHeadlines
+                // so its size has decreased by 1
+                if(!unread_only) {
+                  sel.sel++;
+                }
+                var next_sel = sel.sel;
+                var items = $(sel.siz);
+                if(next_sel >= items.length) return;
+                var as = $(items[next_sel]).find('a');
+                if (!as || as.length === 0) return;
+                var link = $(as[0]);
+                if(link.hasClass('more-link')) {
+                  // click this link per normal but reset the sel since the more link replaces itself
+                  // if you don't you'll skip the next article
+                  if(!unread_only) {
+                    sel.sel--;
+                  }
+                }
+                link.click();
+            } else {
+              sel.sel--;
+              if(sel.sel < 0) {
+                sel.sel = 0;
+                return;
+              }
+              if(!unread_only) {
+              }
+              var prev_sel = sel.sel;
+              var items = $(sel.siz);
+              if(prev_sel < 0) return;
+              var as = $(items[prev_sel]).find('a');
+              if (!as || as.length === 0) return;
+              var link = $(as[0]);
+              if(link.hasClass('more-link')) {
+                // click this link per normal but reset the sel since the more link replaces itself
+                // if you don't you'll skip the next article
+                if(!unread_only) {
+                  sel.sel--;
+                }
+              }
+              link.click();
+            }
         },
 
         cmd_markUnread: function() {
@@ -1078,8 +1125,13 @@ dddns['ddd'] = function(w) {
                 ruto.go('/');
                 return;
             }
+            // instead of ruto.back() use this since if you view multiple articles via Shift-J up doesnt
+            // really do what you want
+            if(!ddd.feeds.currentID) return;
+            ruto.go('/feed/' + ddd.feeds.currentID);
+            return;
         }
-        ruto.back();
+        ruto.go('/')
     };
 
     ddd.getSel = function(view) {

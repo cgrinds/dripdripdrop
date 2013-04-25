@@ -730,6 +730,7 @@ dddns['ddd'] = function(w) {
             var id = parseInt(_id, 10);
             if (ddd.feeds.currentID === id && ddd.feed.currentHeadlines !== null) {
                 ddd.feed.showSelection();
+                if(ddd.feed.goHomeIfFeedIsEmpty()) return;
                 return;
             } else {
                 //$('#view-feed .scroll').empty();
@@ -887,7 +888,18 @@ dddns['ddd'] = function(w) {
             feed.i = feed.index + 1;
             var html = ddd.feeds.markupFeed(feed);
             $('#feed-' + feed.id).replaceWith(html);
-        }
+        },
+
+        goHomeIfFeedIsEmpty: function() {
+          var unread_only = amplify.store('view-mode');
+          var feed = ddd.getSelFeed();
+          if (unread_only && (!feed || feed.unread === 0)) {
+              ruto.go('/');
+              return true;
+          }
+          return false;
+        },
+
     };
 
     ddd.login = {
@@ -941,6 +953,8 @@ dddns['ddd'] = function(w) {
             if (article.updated) {
                 article.date = ddd.formatDate(article.updated, true);
             }
+            back = '#/feed/' + article.feed_id;
+            $('#view-article .header-back-button').attr('href', back);
 
             var tmpl1 = tmpl('article');
             $('#view-article .scroll').html(tmpl1.render(article));
@@ -1117,12 +1131,7 @@ dddns['ddd'] = function(w) {
         if (ddd.currentView === 'article') {
             // when there are no more headlines in a feed it will be removed by this point
             // so go back to the top instead of showing an empty list
-            var unread_only = amplify.store('view-mode');
-            feed = ddd.getSelFeed();
-            if (unread_only && (!feed || feed.unread === 0)) {
-                ruto.go('/');
-                return;
-            }
+            if(ddd.feed.goHomeIfFeedIsEmpty()) return; 
             // instead of ruto.back() use this since if you view multiple articles via Shift-J up doesnt
             // really do what you want
             if(!ddd.feeds.currentID) return;
@@ -1302,9 +1311,6 @@ dddns['ddd'] = function(w) {
           ddd.feed.showSelection();
         })
         .add('/about', 'about')
-        .add('/back', 'back', function(){
-          ddd.cmd_goUp();
-        })
         .add('/settings', 'settings')
         .add('/login', 'login')
         .add('/login_submit', function(path) {

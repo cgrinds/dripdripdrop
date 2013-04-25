@@ -71,6 +71,7 @@ Screenshots
 
 Development
 -----------
+[Node.js](http://nodejs.org/) is required
 
 Prerequisites
 

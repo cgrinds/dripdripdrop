@@ -403,7 +403,7 @@ h1 .fav{
 	padding: 10px;
 	border: 1px solid #E0E0E0;
 	background-color: #fff;
-	font-size: 13px;
+	font-size: 16px;
 	border-radius: 2px;
 	overflow: hidden;
 }
@@ -501,7 +501,7 @@ ol.grouped-tableview-links li>a:hover{
 	color: #2960d9;
 }
 .view .post-content header h1{
-	font-size: 17px;
+	font-size: 19px;
 	line-height: 1.2em;
 }
 .view .post-content header h1 a{
@@ -579,6 +579,103 @@ ol.grouped-tableview-links li>a:hover{
 }
 #app-desc{
 	margin-left: 67px;
+}
+
+/*
+ * Many CSS class names in this file use the verbose "vimiumXYZ" as the class name. This is so we don't
+ * use the same CSS class names that the page is using, so the page's CSS doesn't mess with the style of our
+ * Vimium dialogs.
+ */
+
+/*
+ * This vimiumReset class can be added to any of our UI elements to give it a clean slate. This is useful in
+ * case the page has declared a broad rule like "a { padding: 50px; }" which will mess up our UI. These
+ * declarations contain more specifiers than necessary to increase their specificity (precedence).
+ */
+.vimiumReset,
+div.vimiumReset,
+span.vimiumReset,
+table.vimiumReset,
+a.vimiumReset,
+a:visited.vimiumReset,
+a:link.vimiumReset,
+a:hover.vimiumReset,
+td.vimiumReset,
+tr.vimiumReset {
+  background: none;
+  border: none;
+  bottom: auto;
+  box-shadow: none;
+  color: black;
+  cursor: auto;
+  display: inline;
+  float: none;
+  font-family : "Helvetica Neue", "Helvetica", "Arial", sans-serif;
+  font-size: inherit;
+  font-style: normal;
+  font-variant: normal;
+  font-weight: normal;
+  height: auto;
+  left: auto;
+  letter-spacing: 0;
+  line-height: 100%;
+  margin: 0;
+  max-height: none;
+  max-width: none;
+  min-height: 0;
+  min-width: 0;
+  opacity: 1;
+  padding: 0;
+  position: static;
+  right: auto;
+  text-align: left;
+  text-decoration: none;
+  text-indent: 0;
+  text-shadow: none;
+  text-transform: none;
+  top: auto;
+  vertical-align: baseline;
+  white-space: normal;
+  width: auto;
+  z-index: 99999999;
+}
+
+/* Linkhints CSS */
+
+div.internalVimiumHintMarker {
+  position: absolute;
+  display: block;
+  top: -1px;
+  left: -1px;
+  white-space: nowrap;
+  overflow: hidden;
+  font-size: 11px;
+  padding: 1px 3px 0px 3px;
+  /*background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#FFF785), color-stop(100%,#FFC542));*/
+  background-color: #FFF785;
+  border: solid 1px #C38A22;
+  border-radius: 3px;
+  box-shadow: 0px 3px 7px 0px rgba(0, 0, 0, 0.3);
+}
+
+div.internalVimiumHintMarker span {
+  color: #302505;
+  font-family: Helvetica, Arial, sans-serif;
+  font-weight: bold;
+  font-size: 11px;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+div.internalVimiumHintMarker > .matchingCharacter {
+  color: #D4AC3A;
+}
+
+div#vimiumFlash {
+  box-shadow: 0px 0px 4px 2px #4183C4;
+  padding: 1px;
+  background-color: transparent;
+  position: absolute;
+  z-index: 99999;
 }
 
 @-ms-viewport{

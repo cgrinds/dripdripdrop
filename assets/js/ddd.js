@@ -800,7 +800,6 @@ dddns['ddd'] = function(w) {
                 var next = ddd.feeds.skip;
                 if (!next) next = 0;
                 ddd.feeds.skip = next + ddd.config.ARTICLE_LIMIT;
-                console.log('increase skip to', ddd.feeds.skip)
             }
             $('#view-feed .scroll').html(html);
             ddd.pub('adjustCommentsSection');
@@ -1197,18 +1196,20 @@ dddns['ddd'] = function(w) {
         if (!to_open) return;
         opener.attr('href', to_open);
         //console.log('to_open=', to_open);
-        //opener.click();
-        //
-        // open in a background tab if possible
-        //<https://developer.mozilla.org/en/docs/DOM/event.initMouseEvent>
-        //https://github.com/philc/vimium/blob/master/lib/dom_utils.coffee
-        var evt = document.createEvent("MouseEvents");
-        if (platform === 'Mac') {
-            evt.initMouseEvent("click", true, true, window, 1, 0, 0, 0, 0, true, false, false, true, 0, null);
+        if($.browser.firefox) {
+          opener.click();
         } else {
-            evt.initMouseEvent("click", true, true, window, 1, 0, 0, 0, 0, true, false, false, false, 0, null);
+          // open in a background tab if possible
+          //<https://developer.mozilla.org/en/docs/DOM/event.initMouseEvent>
+          //https://github.com/philc/vimium/blob/master/lib/dom_utils.coffee
+          var evt = document.createEvent("MouseEvents");
+          if (platform === 'Mac') {
+              evt.initMouseEvent("click", true, true, window, 1, 0, 0, 0, 0, true, false, false, true, 0, null);
+          } else {
+              evt.initMouseEvent("click", true, true, window, 1, 0, 0, 0, 0, true, false, false, false, 0, null);
+          }
+          opener[0].dispatchEvent(evt);
         }
-        opener[0].dispatchEvent(evt);
 
         var unread_only = amplify.store('view-mode');
         feed = ddd.getSelFeed();

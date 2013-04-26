@@ -38,10 +38,6 @@ button{
 	width: 20px;
 	height: 20px;
 	background: transparent url(../images/web/white_gear.png) no-repeat;
-	-webkit-background-size: 20px 20px;
-	-moz-background-size: 20px 20px;
-	-ms-background-size: 20px 20px;
-	-o-background-size: 20px 20px;
 	background-size: 20px 20px;
 	vertical-align: text-bottom;
 	overflow: hidden;
@@ -130,10 +126,6 @@ header .question a {
 	background-image: url(../images/web/home-icon.png);
 	background-repeat: no-repeat;
 	background-position: center;
-	-webkit-background-size: 16px 15px;
-	-moz-background-size: 16px 15px;
-	-ms-background-size: 16px 15px;
-	-o-background-size: 16px 15px;
 	background-size: 16px 15px;
 }
 .title {

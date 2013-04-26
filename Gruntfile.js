@@ -22,7 +22,6 @@ module.exports = function(grunt) {
   uglifyWeb.push('assets/js/templates.js');
   uglifyWeb.push('assets/js/ddd.js');
   uglifyWeb.push('assets/js/ddd-web.js');
-  console.log('uglifyWeb=', uglifyWeb);
 
   var libIos = libCommon.slice(0);
   libIos.push.apply(libIos, andIos);
@@ -30,7 +29,6 @@ module.exports = function(grunt) {
   uglifyIos.push('assets/js/templates.js');
   uglifyIos.push('assets/js/ddd.js');
   uglifyIos.push('assets/js/ddd-ios.js');
-  console.log('uglifyIos=', uglifyIos);
  
   var tmpl = grunt.file.read('assets/js/templates.js');
   var hashes = grunt.file.readJSON('hashes.json');

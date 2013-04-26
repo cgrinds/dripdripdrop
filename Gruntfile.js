@@ -190,6 +190,20 @@ module.exports = function(grunt) {
       }
       
     },
+
+    cssmin: {
+      web: {
+        files: {
+          'ddd.min/assets/css/ddd-web.css' : ['assets/css/ddd-web.css']
+        }
+      },
+      ios: {
+        files: {
+          'ddd.min/assets/css/ddd-ios.css' : ['assets/css/ddd-ios.css']
+        }
+      }
+    },
+
 	});
 
 	grunt.loadNpmTasks('grunt-contrib-uglify');
@@ -198,10 +212,11 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-text-replace');
   grunt.loadNpmTasks('grunt-contrib-copy');
   grunt.loadNpmTasks('grunt-contrib-compress');
+  grunt.loadNpmTasks('grunt-contrib-cssmin');
 
   grunt.registerTask('prod', 
     ['prod-debug', 'replace:index_web_min', 'uglify:web', 'uglify:ios', 'copy:prod', 
-      'replace:sourcemap', 'compress:dist']);
+      'cssmin:web', 'cssmin:ios', 'replace:sourcemap', 'compress:dist']);
 
   grunt.registerTask('prod-debug', 
     ['replace:templates', 'replace:index_common', 'replace:index_web', 

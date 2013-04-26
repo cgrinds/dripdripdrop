@@ -74,17 +74,20 @@ header.fake{
 	z-index: 1;
 }
 .tableview-links .fav{
-	position: absolute;
-	left:10px;
-	top: 12px;
     width: 16px;
     height: 16px;
+    margin-right: 6px;
 }
 h1 .fav{
     width: 16px;
     height: 16px;
     padding: 0px 8px 0 0;
 }
+.count {
+    line-height: 60px;
+    margin-right: 17px;
+}
+
 header.fake,
 .view>header{
 	background: #b2bbca url(../images/ios/nav-bar.png) repeat-x;
@@ -189,7 +192,7 @@ header.fake,
 }
 .view>header h1 img{
 	vertical-align: -15%;
-	border: 1px solid #fff;
+	/*border: 1px solid #fff;*/
 }
 .view>.scroll{
 	-webkit-box-flex: 1;
@@ -387,7 +390,7 @@ body:not(.ios5) .view>.scroll:before{
 }
 .tableview-links li>a{
 	font-size: 15px;
-	line-height: 1.3em;
+	min-height: 50px;
 	color: #000;
 	display: block;
 	padding: 5px;
@@ -521,7 +524,8 @@ body:not(.ios5) .view>.scroll:before{
 	-webkit-user-select: none;
 }
 #view-home .tableview-links li>a{
-	min-height: 70px;
+    line-height: 60px;
+    height: 60px;
 }
 #view-home .tableview-links li>a[href^="#/item"]{
 	-webkit-touch-callout: none;

@@ -59,6 +59,7 @@ DripDripDrop is using:
 - [Amplify.Store](http://amplifyjs.com/api/store/) - client-side storage
 - ruto.js - `location.hash` router
 - [zepto.js](http://zeptojs.com/) - a minimalist JavaScript library for modern browsers with a largely jQuery-compatible API.
+- [Vimium](https://github.com/philc/vimium) - for link highlighting
 - iOS
 	- [Tappable](https://github.com/cheeaun/tappable) - touch-friendly tap events
 	- [Tween.js](https://github.com/sole/tween.js) - simple tweening engine
@@ -66,7 +67,7 @@ DripDripDrop is using:
 Screenshots
 -----------
 <img src="http://gstaff.org/dripdripdrop/screenshots/feeds.png">
-<img src="http://gstaff.org/dripdripdrop/screenshots/article.png">
+<img src="http://gstaff.org/dripdripdrop/screenshots/links.png">
 
 
 Development

@@ -53,10 +53,10 @@ dddns['ddd-plat'] = function(w) {
     w.addEventListener('orientationchange', adjustViewsHeight, false);
     adjustViewsHeight();
 
-    $('#view-home-settings').on('click', function(e) {
+    $('#view-home-settings').on('click', function() {
         ddd.feeds.settings();
     });
-    $('#view-home .more-link').on('click', function(e) {
+    $('#view-home .more-link').on('click', function() {
         ddd.feeds.moreFeeds(target);
     });
     $('#view-feed').on('click', '.more-link', function(e) {
@@ -76,13 +76,13 @@ dddns['ddd-plat'] = function(w) {
         if (e.keyCode === 13)
             ddd.login.doLogin();
     });
-    $('#view-login').on('click', '#login', function(e) {
+    $('#view-login').on('click', '#login', function() {
       ddd.login.doLogin();
     });
-    $('#view-home').on('click', '.question .delete', function(e) {
+    $('#view-home').on('click', '.question .delete', function() {
         ddd.feeds.removeFeedsInline(false);
     });
-    $('#view-home').on('click', '.question .cancel', function(e) {
+    $('#view-home').on('click', '.question .cancel', function() {
         ddd.feeds.removeFeedsInline(true);
     });
 
@@ -236,7 +236,6 @@ KeyboardUtils = {
       } else {
         return character;
       }
-      return "";
     }
     if (event.keyIdentifier.slice(0, 2) !== "U+") {
       if (this.keyNames[event.keyCode]) {
@@ -279,9 +278,9 @@ root = typeof exports !== "undefined" && exports !== null ? exports : window;
 root.KeyboardUtils = KeyboardUtils;
 
 root.keyCodes = KeyboardUtils.keyCodes;
-      
-      dddKeys = function(e) {
-        keyChar = KeyboardUtils.getKeyChar(e).toLowerCase();
+    
+KeyboardUtils.dddKeys = function(e) {
+        var keyChar = KeyboardUtils.getKeyChar(e).toLowerCase();
         if(keyChar === 'i' || keyChar === 'o') {
           LinkHints.deactivateMode(0); 
           return true;
@@ -291,25 +290,25 @@ root.keyCodes = KeyboardUtils.keyCodes;
         return false;
       };
 
-      onKeypress = function(e) {
-        if(dddKeys(e)) return false;
-        var ret = handlerStack.bubbleEvent('keypress', e);
-        console.log('onKP ret', ret);
-        return ret;
-      };
+      //onKeypress = function(e) {
+        //if(KeyboardUtils.dddKeys(e)) return false;
+        //var ret = handlerStack.bubbleEvent('keypress', e);
+        //console.log('onKP ret', ret);
+        //return ret;
+      //};
 
-      onKeydown = function(e) {
+      var onKeydown = function(e) {
         if(ddd.currentView !== 'article') return;
         //console.log('onKD', e);
-        if(dddKeys(e)) return false;
-        ret = handlerStack.bubbleEvent('keydown', e);
+        if(KeyboardUtils.dddKeys(e)) return false;
+        var ret = handlerStack.bubbleEvent('keydown', e);
         return ret;
       };
 
-      onKeyup = function(e) {
+      var onKeyup = function(e) {
         if(ddd.currentView !== 'article') return;
-        if(dddKeys(e)) return false;
-        ret = handlerStack.bubbleEvent('keyup', e);
+        if(KeyboardUtils.dddKeys(e)) return false;
+        var ret = handlerStack.bubbleEvent('keyup', e);
         //console.log('onKUP ret', ret);
         return ret;
       };
@@ -321,21 +320,6 @@ root.keyCodes = KeyboardUtils.keyCodes;
       var DomUtils, root;
 
       DomUtils = {
-        documentReady: (function() {
-          var loaded;
-
-          loaded = false;
-          window.addEventListener("DOMContentLoaded", function() {
-            return loaded = true;
-          });
-          return function(callback) {
-            if (loaded) {
-              return callback();
-            } else {
-              return window.addEventListener("DOMContentLoaded", callback);
-            }
-          };
-        })(),
         addElementList: function(els, overlayOptions) {
           var el, parent, _i, _len;
 
@@ -469,82 +453,25 @@ root.keyCodes = KeyboardUtils.keyCodes;
 
       root.DomUtils = DomUtils;
 
-      var COPY_LINK_URL, LinkHints, OPEN_INCOGNITO, OPEN_IN_CURRENT_TAB, OPEN_IN_NEW_TAB, OPEN_WITH_QUEUE, alphabetHints, filterHints, numberToHintString, root, spanWrap;
-
-      OPEN_IN_CURRENT_TAB = {};
+      var LinkHints, OPEN_IN_NEW_TAB, alphabetHints, filterHints, numberToHintString, root, spanWrap;
 
       OPEN_IN_NEW_TAB = {};
-
-      OPEN_WITH_QUEUE = {};
-
-      COPY_LINK_URL = {};
-
-      OPEN_INCOGNITO = {};
 
 var settings;
 
 settings = {
-  port: null,
   values: {},
   loadedValues: 0,
-  valuesToLoad: ["scrollStepSize", "linkHintCharacters", "linkHintNumbers", "filterLinkHints", "hideHud", "previousPatterns", "nextPatterns", "findModeRawQuery", "regexFindMode", "userDefinedLinkHintCss", "helpDialog_showAdvancedCommands"],
   isLoaded: false,
   eventListeners: {},
   init: function() {
-    //this.port = chrome.extension.connect({
-      //name: "settings"
-    //});
-    //return this.port.onMessage.addListener(this.receiveMessage);
   },
   get: function(key) {
     return this.values[key];
   },
   set: function(key, value) {
-    //if (!this.port) {
-      //this.init();
-    //}
     this.values[key] = value;
-    //return this.port.postMessage({
-      //operation: "set",
-      //key: key,
-      //value: value
-    //});
   },
-  load: function() {
-    var i, _results;
-
-    if (!this.port) {
-      this.init();
-    }
-    _results = [];
-    for (i in this.valuesToLoad) {
-      _results.push(this.port.postMessage({
-        operation: "get",
-        key: this.valuesToLoad[i]
-      }));
-    }
-    return _results;
-  },
-  receiveMessage: function(args) {
-    var listener, _results;
-
-    settings.values[args.key] = args.value;
-    if (++settings.loadedValues === settings.valuesToLoad.length) {
-      settings.isLoaded = true;
-      listener = null;
-      _results = [];
-      while ((listener = settings.eventListeners["load"].pop())) {
-        _results.push(listener());
-      }
-      return _results;
-    }
-  },
-  addEventListener: function(eventName, callback) {
-    if (!(eventName in this.eventListeners)) {
-      this.eventListeners[eventName] = [];
-    }
-    return this.eventListeners[eventName].push(callback);
-  }
 };
 
 var root;
@@ -602,9 +529,7 @@ root.HandlerStack = (function() {
     }
     return _results;
   };
-
   return HandlerStack;
-
 })();
 
   window.handlerStack = new HandlerStack();
@@ -613,298 +538,249 @@ root.HandlerStack = (function() {
   // modify to not conflict with ddd article shortcuts
   settings.set('linkHintCharacters', 'sdvghlewcmpghu');
      
-      HUD = {
-        show: function(msg) {
-        },
-        hide: function(){},
-      };
+  LinkHints = {
+    hintMarkerContainingDiv: null,
+    mode: void 0,
+    linkActivator: void 0,
+    delayMode: false,
+    markerMatcher: void 0,
+    isActive: false,
+    init: function() {
+      return this.markerMatcher = settings.get("filterLinkHints") ? filterHints : alphabetHints;
+    },
+    clickableElementsXPath: DomUtils.makeXPath(["a", "area[@href]", "textarea", "button", "select", "input[not(@type='hidden' or @disabled or @readonly)]", "*[@onclick or @tabindex or @role='link' or @role='button' or contains(@class, 'button') or " + "@contenteditable='' or translate(@contenteditable, 'TRUE', 'true')='true']"]),
+    activateModeToOpenInNewTab: function() {
+      return this.activateMode(OPEN_IN_NEW_TAB);
+    },
+    activateMode: function(mode) {
+      var el, hintMarkers;
 
-      LinkHints = {
-        hintMarkerContainingDiv: null,
-        mode: void 0,
-        linkActivator: void 0,
-        delayMode: false,
-        markerMatcher: void 0,
-        isActive: false,
-        init: function() {
-          return this.markerMatcher = settings.get("filterLinkHints") ? filterHints : alphabetHints;
-        },
-        clickableElementsXPath: DomUtils.makeXPath(["a", "area[@href]", "textarea", "button", "select", "input[not(@type='hidden' or @disabled or @readonly)]", "*[@onclick or @tabindex or @role='link' or @role='button' or contains(@class, 'button') or " + "@contenteditable='' or translate(@contenteditable, 'TRUE', 'true')='true']"]),
-        activateModeToOpenInNewTab: function() {
-          return this.activateMode(OPEN_IN_NEW_TAB);
-        },
-        activateModeToCopyLinkUrl: function() {
-          return this.activateMode(COPY_LINK_URL);
-        },
-        activateModeWithQueue: function() {
-          return this.activateMode(OPEN_WITH_QUEUE);
-        },
-        activateModeToOpenIncognito: function() {
-          return this.activateMode(OPEN_INCOGNITO);
-        },
-        activateMode: function(mode) {
-          var el, hintMarkers;
+      if (mode == null) {
+        mode = OPEN_IN_NEW_TAB;
+      }
+      if (!document.documentElement) {
+        return;
+      }
+      if (this.isActive) {
+        return;
+      }
+      this.isActive = true;
+      this.setOpenLinkMode(mode);
+      hintMarkers = this.markerMatcher.fillInMarkers((function() {
+        var _i, _len, _ref, _results;
 
-          if (mode == null) {
-            mode = OPEN_IN_CURRENT_TAB;
-          }
-          if (!document.documentElement) {
-            return;
-          }
-          if (this.isActive) {
-            return;
-          }
-          this.isActive = true;
-          this.setOpenLinkMode(mode);
-          hintMarkers = this.markerMatcher.fillInMarkers((function() {
-            var _i, _len, _ref, _results;
-
-            _ref = this.getVisibleClickableElements();
-            _results = [];
-            for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-              el = _ref[_i];
-              _results.push(this.createMarkerFor(el));
-            }
-            return _results;
-          }).call(this));
-          this.hintMarkerContainingDiv = DomUtils.addElementList(hintMarkers, {
-            id: "vimiumHintMarkerContainer",
-            className: "vimiumReset"
-          });
-          return this.handlerId = handlerStack.push({
-            keydown: this.onKeyDownInMode.bind(this, hintMarkers),
-            keypress: function() {
-              return false;
-            },
-            keyup: function() {
-              return false;
-            }
-          });
-        },
-        setOpenLinkMode: function(mode) {
-          this.mode = mode;
-          if (this.mode === OPEN_IN_NEW_TAB || this.mode === OPEN_WITH_QUEUE) {
-            if (this.mode === OPEN_IN_NEW_TAB) {
-              HUD.show("Open link in new tab");
-            } else {
-              HUD.show("Open multiple links in a new tab");
-            }
-            return this.linkActivator = function(link) {
-              return DomUtils.simulateClick(link, {
-                metaKey: KeyboardUtils.platform === "Mac",
-                ctrlKey: KeyboardUtils.platform !== "Mac"
-              });
-            };
-          } else if (this.mode === COPY_LINK_URL) {
-            HUD.show("Copy link URL to Clipboard");
-            return this.linkActivator = function(link) {
-              return chrome.extension.sendRequest({
-                handler: "copyToClipboard",
-                data: link.href
-              });
-            };
-          } else if (this.mode === OPEN_INCOGNITO) {
-            HUD.show("Open link in incognito window");
-            return this.linkActivator = function(link) {
-              return chrome.extension.sendMessage({
-                handler: 'openUrlInIncognito',
-                url: link.href
-              });
-            };
-          } else {
-            HUD.show("Open link in current tab");
-            return this.linkActivator = function(link) {
-              return setTimeout(DomUtils.simulateClick.bind(DomUtils, link), 400);
-            };
-          }
-        },
-        shouldCreateMarker: function(ele) {
-          var $e = $(ele);
-          if ($e.hasClass('header-button')) return false;
-          if (ele.localName === 'button') {
-            if($(ele.parentElement).hasClass('header-button')) return false;
-          }
-          if($e.attr('id') === 'full_article') return false;
-          return true;
-        },
-
-        createMarkerFor: function(link) {
-          var clientRect, marker;
-
-          marker = document.createElement("div");
-          marker.className = "vimiumReset internalVimiumHintMarker vimiumHintMarker";
-          marker.clickableItem = link.element;
-          clientRect = link.rect;
-          marker.style.left = clientRect.left + window.scrollX + "px";
-          marker.style.top = clientRect.top - 15 + window.scrollY + "px";
-          marker.rect = link.rect;
-          return marker;
-        },
-        getVisibleClickableElements: function() {
-          var c, clientRect, coords, element, i, img, imgClientRects, map, rect, resultSet, visibleElements, _i, _ref;
-
-          resultSet = DomUtils.evaluateXPath(this.clickableElementsXPath, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE);
-          visibleElements = [];
-          for (i = _i = 0, _ref = resultSet.snapshotLength; _i < _ref; i = _i += 1) {
-            element = resultSet.snapshotItem(i);
-            clientRect = DomUtils.getVisibleClientRect(element, clientRect);
-            if (LinkHints.shouldCreateMarker(element) && clientRect !== null) {
-              visibleElements.push({
-                element: element,
-                rect: clientRect
-              });
-            }
-            if (element.localName === "area") {
-              map = element.parentElement;
-              if (!map) {
-                continue;
-              }
-              img = document.querySelector("img[usemap='#" + map.getAttribute("name") + "']");
-              if (!img) {
-                continue;
-              }
-              imgClientRects = img.getClientRects();
-              if (imgClientRects.length === 0) {
-                continue;
-              }
-              c = element.coords.split(/,/);
-              coords = [parseInt(c[0], 10), parseInt(c[1], 10), parseInt(c[2], 10), parseInt(c[3], 10)];
-              rect = {
-                top: imgClientRects[0].top + coords[1],
-                left: imgClientRects[0].left + coords[0],
-                right: imgClientRects[0].left + coords[2],
-                bottom: imgClientRects[0].top + coords[3],
-                width: coords[2] - coords[0],
-                height: coords[3] - coords[1]
-              };
-              visibleElements.push({
-                element: element,
-                rect: rect
-              });
-            }
-          }
-          return visibleElements;
-        },
-        onKeyDownInMode: function(hintMarkers, event) {
-          var delay, keyResult, linksMatched, marker, matched, prev_mode, _i, _j, _len, _len1, _ref,
-            _this = this;
-
-          if (this.delayMode) {
-            return;
-          }
-          if (event.keyCode === keyCodes.shiftKey && this.mode !== COPY_LINK_URL) {
-            prev_mode = this.mode;
-            this.setOpenLinkMode(this.mode === OPEN_IN_CURRENT_TAB ? OPEN_IN_NEW_TAB : OPEN_IN_CURRENT_TAB);
-            handlerStack.push({
-              keyup: function(event) {
-                if (event.keyCode !== keyCodes.shiftKey) {
-                  return;
-                }
-                if (_this.isActive) {
-                  _this.setOpenLinkMode(prev_mode);
-                }
-                return _this.remove();
-              }
-            });
-          }
-          if (KeyboardUtils.isEscape(event)) {
-            this.deactivateMode();
-          } else if (event.keyCode !== keyCodes.shiftKey) {
-            keyResult = this.markerMatcher.matchHintsByKey(hintMarkers, event);
-            linksMatched = keyResult.linksMatched;
-            delay = (_ref = keyResult.delay) != null ? _ref : 0;
-            if (linksMatched.length === 0) {
-              this.deactivateMode();
-            } else if (linksMatched.length === 1) {
-              this.activateLink(linksMatched[0], delay);
-            } else {
-              for (_i = 0, _len = hintMarkers.length; _i < _len; _i++) {
-                marker = hintMarkers[_i];
-                this.hideMarker(marker);
-              }
-              for (_j = 0, _len1 = linksMatched.length; _j < _len1; _j++) {
-                matched = linksMatched[_j];
-                this.showMarker(matched, this.markerMatcher.hintKeystrokeQueue.length);
-              }
-            }
-          }
+        _ref = this.getVisibleClickableElements();
+        _results = [];
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          el = _ref[_i];
+          _results.push(this.createMarkerFor(el));
+        }
+        return _results;
+      }).call(this));
+      this.hintMarkerContainingDiv = DomUtils.addElementList(hintMarkers, {
+        id: "vimiumHintMarkerContainer",
+        className: "vimiumReset"
+      });
+      return this.handlerId = handlerStack.push({
+        keydown: this.onKeyDownInMode.bind(this, hintMarkers),
+        keypress: function() {
           return false;
         },
-        activateLink: function(matchedLink, delay) {
-          var clickEl;
+        keyup: function() {
+          return false;
+        }
+      });
+    },
+    setOpenLinkMode: function(mode) {
+      this.mode = mode;
+      if (this.mode === OPEN_IN_NEW_TAB) {
+        return this.linkActivator = function(link) {
+          return DomUtils.simulateClick(link, {
+            metaKey: KeyboardUtils.platform === "Mac",
+            ctrlKey: KeyboardUtils.platform !== "Mac"
+          });
+        };
+      }
+    },
+    shouldCreateMarker: function(ele) {
+      var $e = $(ele);
+      if ($e.hasClass('header-button')) return false;
+      if (ele.localName === 'button') {
+        if($(ele.parentElement).hasClass('header-button')) return false;
+      }
+      if($e.attr('id') === 'full_article') return false;
+      return true;
+    },
 
-          this.delayMode = true;
-          clickEl = matchedLink.clickableItem;
-          if (DomUtils.isSelectable(clickEl)) {
-            DomUtils.simulateSelect(clickEl);
-            return this.deactivateMode(delay, function() {
-              return LinkHints.delayMode = false;
-            });
-          } else {
-            if (clickEl.nodeName.toLowerCase() === "input" && clickEl.type !== "button") {
-              clickEl.focus();
-            }
-            DomUtils.flashRect(matchedLink.rect);
-            this.linkActivator(clickEl);
-            if (this.mode === OPEN_WITH_QUEUE) {
-              return this.deactivateMode(delay, function() {
-                LinkHints.delayMode = false;
-                return LinkHints.activateModeWithQueue();
-              });
-            } else {
-              return this.deactivateMode(delay, function() {
-                return LinkHints.delayMode = false;
-              });
-            }
-          }
-        },
-        showMarker: function(linkMarker, matchingCharCount) {
-          var j, _i, _ref, _results;
+    createMarkerFor: function(link) {
+      var clientRect, marker;
 
-          linkMarker.style.display = "";
-          _results = [];
-          for (j = _i = 0, _ref = linkMarker.childNodes.length; 0 <= _ref ? _i < _ref : _i > _ref; j = 0 <= _ref ? ++_i : --_i) {
-            if (j < matchingCharCount) {
-              _results.push(linkMarker.childNodes[j].classList.add("matchingCharacter"));
-            } else {
-              _results.push(linkMarker.childNodes[j].classList.remove("matchingCharacter"));
-            }
+      marker = document.createElement("div");
+      marker.className = "vimiumReset internalVimiumHintMarker vimiumHintMarker";
+      marker.clickableItem = link.element;
+      clientRect = link.rect;
+      marker.style.left = clientRect.left + window.scrollX + "px";
+      marker.style.top = clientRect.top - 15 + window.scrollY + "px";
+      marker.rect = link.rect;
+      return marker;
+    },
+    getVisibleClickableElements: function() {
+      var c, clientRect, coords, element, i, img, imgClientRects, map, rect, resultSet, visibleElements, _i, _ref;
+
+      resultSet = DomUtils.evaluateXPath(this.clickableElementsXPath, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE);
+      visibleElements = [];
+      for (i = _i = 0, _ref = resultSet.snapshotLength; _i < _ref; i = _i += 1) {
+        element = resultSet.snapshotItem(i);
+        clientRect = DomUtils.getVisibleClientRect(element, clientRect);
+        if (LinkHints.shouldCreateMarker(element) && clientRect !== null) {
+          visibleElements.push({
+            element: element,
+            rect: clientRect
+          });
+        }
+        if (element.localName === "area") {
+          map = element.parentElement;
+          if (!map) {
+            continue;
           }
-          return _results;
-        },
-        hideMarker: function(linkMarker) {
-          return linkMarker.style.display = "none";
-        },
-        deactivateMode: function(delay, callback) {
-          var deactivate,
-            _this = this;
-          deactivate = function() {
-            if (LinkHints.markerMatcher.deactivate) {
-              LinkHints.markerMatcher.deactivate();
-            }
-            if (LinkHints.hintMarkerContainingDiv) {
-              DomUtils.removeElement(LinkHints.hintMarkerContainingDiv);
-            }
-            LinkHints.hintMarkerContainingDiv = null;
-            handlerStack.remove(_this.handlerId);
-            HUD.hide();
-            return _this.isActive = false;
+          img = document.querySelector("img[usemap='#" + map.getAttribute("name") + "']");
+          if (!img) {
+            continue;
+          }
+          imgClientRects = img.getClientRects();
+          if (imgClientRects.length === 0) {
+            continue;
+          }
+          c = element.coords.split(/,/);
+          coords = [parseInt(c[0], 10), parseInt(c[1], 10), parseInt(c[2], 10), parseInt(c[3], 10)];
+          rect = {
+            top: imgClientRects[0].top + coords[1],
+            left: imgClientRects[0].left + coords[0],
+            right: imgClientRects[0].left + coords[2],
+            bottom: imgClientRects[0].top + coords[3],
+            width: coords[2] - coords[0],
+            height: coords[3] - coords[1]
           };
-          if (!delay) {
-            deactivate();
-            if (callback) {
-              return callback();
+          visibleElements.push({
+            element: element,
+            rect: rect
+          });
+        }
+      }
+      return visibleElements;
+    },
+    onKeyDownInMode: function(hintMarkers, event) {
+      var delay, keyResult, linksMatched, marker, matched, prev_mode, _i, _j, _len, _len1, _ref,
+        _this = this;
+
+      if (this.delayMode) {
+        return;
+      }
+      if (event.keyCode === keyCodes.shiftKey && this.mode !== COPY_LINK_URL) {
+        prev_mode = this.mode;
+        this.setOpenLinkMode(OPEN_IN_NEW_TAB);
+        handlerStack.push({
+          keyup: function(event) {
+            if (event.keyCode !== keyCodes.shiftKey) {
+              return;
             }
-          } else {
-            return setTimeout(function() {
-              deactivate();
-              if (callback) {
-                return callback();
-              }
-            }, delay);
+            if (_this.isActive) {
+              _this.setOpenLinkMode(prev_mode);
+            }
+            return _this.remove();
+          }
+        });
+      }
+      if (KeyboardUtils.isEscape(event)) {
+        this.deactivateMode();
+      } else if (event.keyCode !== keyCodes.shiftKey) {
+        keyResult = this.markerMatcher.matchHintsByKey(hintMarkers, event);
+        linksMatched = keyResult.linksMatched;
+        delay = (_ref = keyResult.delay) != null ? _ref : 0;
+        if (linksMatched.length === 0) {
+          this.deactivateMode();
+        } else if (linksMatched.length === 1) {
+          this.activateLink(linksMatched[0], delay);
+        } else {
+          for (_i = 0, _len = hintMarkers.length; _i < _len; _i++) {
+            marker = hintMarkers[_i];
+            this.hideMarker(marker);
+          }
+          for (_j = 0, _len1 = linksMatched.length; _j < _len1; _j++) {
+            matched = linksMatched[_j];
+            this.showMarker(matched, this.markerMatcher.hintKeystrokeQueue.length);
           }
         }
+      }
+      return false;
+    },
+    activateLink: function(matchedLink, delay) {
+      var clickEl;
+
+      this.delayMode = true;
+      clickEl = matchedLink.clickableItem;
+      if (DomUtils.isSelectable(clickEl)) {
+        DomUtils.simulateSelect(clickEl);
+        return this.deactivateMode(delay, function() {
+          return LinkHints.delayMode = false;
+        });
+      } else {
+        if (clickEl.nodeName.toLowerCase() === "input" && clickEl.type !== "button") {
+          clickEl.focus();
+        }
+        DomUtils.flashRect(matchedLink.rect);
+        this.linkActivator(clickEl);
+        return this.deactivateMode(delay, function() {
+          return LinkHints.delayMode = false;
+        });
+      }
+    },
+    showMarker: function(linkMarker, matchingCharCount) {
+      var j, _i, _ref, _results;
+
+      linkMarker.style.display = "";
+      _results = [];
+      for (j = _i = 0, _ref = linkMarker.childNodes.length; 0 <= _ref ? _i < _ref : _i > _ref; j = 0 <= _ref ? ++_i : --_i) {
+        if (j < matchingCharCount) {
+          _results.push(linkMarker.childNodes[j].classList.add("matchingCharacter"));
+        } else {
+          _results.push(linkMarker.childNodes[j].classList.remove("matchingCharacter"));
+        }
+      }
+      return _results;
+    },
+    hideMarker: function(linkMarker) {
+      return linkMarker.style.display = "none";
+    },
+    deactivateMode: function(delay, callback) {
+      var deactivate,
+        _this = this;
+      deactivate = function() {
+        if (LinkHints.markerMatcher.deactivate) {
+          LinkHints.markerMatcher.deactivate();
+        }
+        if (LinkHints.hintMarkerContainingDiv) {
+          DomUtils.removeElement(LinkHints.hintMarkerContainingDiv);
+        }
+        LinkHints.hintMarkerContainingDiv = null;
+        handlerStack.remove(_this.handlerId);
+        return _this.isActive = false;
       };
+      if (!delay) {
+        deactivate();
+        if (callback) {
+          return callback();
+        }
+      } else {
+        return setTimeout(function() {
+          deactivate();
+          if (callback) {
+            return callback();
+          }
+        }, delay);
+      }
+    }
+  };
 
       alphabetHints = {
         hintKeystrokeQueue: [],
@@ -1128,7 +1004,7 @@ root.HandlerStack = (function() {
           }
           return linksMatched;
         },
-        deactivate: function(delay, callback) {
+        deactivate: function() {
           this.hintKeystrokeQueue = [];
           this.linkTextKeystrokeQueue = [];
           return this.labelMap = {};
@@ -1172,7 +1048,7 @@ root.HandlerStack = (function() {
       };
 root = typeof exports !== "undefined" && exports !== null ? exports : window;
 root.LinkHints = LinkHints;
-var hints = LinkHints.init.bind(LinkHints)();
+LinkHints.init.bind(LinkHints)();
 
 var poll = function() {
     if (window._ddd_config) {

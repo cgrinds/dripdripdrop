@@ -52,7 +52,7 @@ module.exports = function(grunt) {
 					},
 					sourceMapRoot: '.',
           compress: {
-            sequences     : true,
+            //sequences     : true,
             properties    : true,
             dead_code     : true,
             drop_debugger : true,
@@ -65,11 +65,11 @@ module.exports = function(grunt) {
             hoist_funs    : true,
             hoist_vars    : true,
             if_return     : true,
-            join_vars     : true,
+            //join_vars     : true,
             cascade       : true,
             side_effects  : true,
             warnings      : true,
-            screw_ie8     : true,
+            //screw_ie8     : true,
           },
 				},
 				files: {

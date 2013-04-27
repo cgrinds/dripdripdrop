@@ -51,6 +51,26 @@ module.exports = function(grunt) {
 						return path.slice(8) + '.map';
 					},
 					sourceMapRoot: '.',
+          compress: {
+            sequences     : true,
+            properties    : true,
+            dead_code     : true,
+            drop_debugger : true,
+            conditionals  : true,
+            comparisons   : true,
+            evaluate      : true,
+            booleans      : true,
+            loops         : true,
+            unused        : true,
+            hoist_funs    : true,
+            hoist_vars    : true,
+            if_return     : true,
+            join_vars     : true,
+            cascade       : true,
+            side_effects  : true,
+            warnings      : true,
+            screw_ie8     : true,
+          },
 				},
 				files: {
 					'ddd.min/ddd.min.web.js': 'ddd.min/ddd.web.js'
@@ -63,7 +83,27 @@ module.exports = function(grunt) {
 					sourceMappingURL: function(path){
 						return path.replace(/^js\//i, '') + '.map';
 					},
-					sourceMapRoot: '../'
+					sourceMapRoot: '../',
+          compress: {
+            sequences     : true,
+            properties    : true,
+            dead_code     : true,
+            drop_debugger : true,
+            conditionals  : true,
+            comparisons   : true,
+            evaluate      : true,
+            booleans      : true,
+            loops         : true,
+            unused        : true,
+            hoist_funs    : true,
+            hoist_vars    : true,
+            if_return     : true,
+            join_vars     : true,
+            cascade       : true,
+            side_effects  : true,
+            warnings      : true,
+            screw_ie8     : true,
+          },
 				},
 				files: {
 					'ddd.min/ddd.min.ios.js': uglifyIos

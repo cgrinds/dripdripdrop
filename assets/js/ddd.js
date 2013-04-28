@@ -1228,7 +1228,14 @@ dddns['ddd'] = function(w) {
         // unfortunatley the feed's index can not be used since the index does not adjust as feeds
         // are marked read so this search must be done
         var all = $(sel.siz);
-        var clickedIndex = all.indexOf(target);
+        // target is a an anchor, we need a li which is the parent
+        // Sigh on Opera target is a div
+        var ele = target.parentElement;
+        if(ele.localName === 'a') {
+          ele = ele.parentElement;
+        }
+        var clickedIndex = all.indexOf(ele);
+        //console.log('clickedIndex is', clickedIndex);
         if (clickedIndex != -1) {
             sel.sel = clickedIndex;
         }
@@ -1264,18 +1271,21 @@ dddns['ddd'] = function(w) {
         var isVisible = isScrolledIntoView(elem);
         if (isVisible) return;
         var offsetHeight = elem.offsetHeight;
+        //console.log('offsetHeight=', offsetHeight);
+        var toScroll = $.browser.chrome ? document.body : $('html')[0];
         if (dir < 0) {
-            document.body.scrollTop = elemTop - (offsetHeight - 5);
+            toScroll.scrollTop = elemTop - (offsetHeight - 5);
         } else {
             var inc = offsetHeight;
-            document.body.scrollTop = document.body.scrollTop + inc;
+            toScroll.scrollTop =  toScroll.scrollTop + inc;
             //console.log('inc scrollTopBy ' + inc + ' scrollTop=' + document.body.scrollTop);
         }
         //$('body').scrollTop($('#questions').offset().top - 75);
     };
 
     function isScrolledIntoView(elem) {
-        var docViewTop = document.body.scrollTop;
+        var toScroll = $.browser.chrome ? document.body : $('html')[0];
+        var docViewTop = toScroll.scrollTop;
         // this may not work everywhere
         // http://stackoverflow.com/questions/1823691/html-dom-width-height-of-visible-window
         var docViewBottom = docViewTop + window.innerHeight;

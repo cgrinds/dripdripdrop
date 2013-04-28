@@ -62,7 +62,7 @@ dddns['ddd-plat'] = function(w) {
     $('#view-feed').on('click', '.more-link', function(e) {
         ddd.feeds.more(e.target);
     });
-    $('#feedslist').on('click', 'li', function(e) {
+    $('#view-home').on('click', 'li', function(e) {
         ddd.cmd_click_feed(e.target);
     });
     $('body').on('keydown', '#add-feed', function(e) {

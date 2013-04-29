@@ -452,7 +452,7 @@ dddns['ddd'] = function(w) {
                 show_content: "true",
                 view_mode: unread_only ? "unread" : "",
                 skip: "" + skipBy,
-                limit: "" + ddd.config.ARTICLE_LIMIT,
+                limit: "" + ddd.config.article_limit,
             };
             var feedsById = amplify.store('feeds-by-id');
             var item = feedsById[feed_id];
@@ -468,12 +468,12 @@ dddns['ddd'] = function(w) {
                 if (ddd.feed.currentHeadlines) ddd.feed.currentHeadlines.push.apply(ddd.feed.currentHeadlines, data);
                 var html = ddd.feeds.markupHeadlines(data, skipBy + 1);
                 // do we still need more?
-                html += data.length >= ddd.config.ARTICLE_LIMIT ?
+                html += data.length >= ddd.config.article_limit ?
                     '<li><a class="more-link">More&hellip;<span class="loader"></span></a></li>' : '' +
                     '</ul>';
                 $('#dddlist').append(html);
                 //$('dddlist').insertAdjacentHTML('beforeend', html);
-                ddd.feeds.skip += ddd.config.ARTICLE_LIMIT;
+                ddd.feeds.skip += ddd.config.article_limit;
             }, function(e) {});
         },
         reload: function(force) {
@@ -769,7 +769,7 @@ dddns['ddd'] = function(w) {
                 feed_id: "" + id,
                 show_content: "true",
                 view_mode: unread_only ? "unread" : "",
-                limit: "" + ddd.config.ARTICLE_LIMIT,
+                limit: "" + ddd.config.article_limit,
             };
             ttrss.headlines(msg, function(data) {
                 loadingHeadlines = false;
@@ -804,13 +804,13 @@ dddns['ddd'] = function(w) {
             var moreOnPage = $('.more-link').length > 0;
             var html = '<ul class="tableview tableview-links" id="dddlist">' +
                 ddd.feeds.markupHeadlines(data) +
-                (moreOnPage || data.length >= ddd.config.ARTICLE_LIMIT ?
+                (moreOnPage || data.length >= ddd.config.article_limit ?
                 '<li><a class="more-link">More&hellip;<span class="loader"></span></a></li>' : '') +
                 '</ul>';
-            if (!moreOnPage && data.length >= ddd.config.ARTICLE_LIMIT) {
+            if (!moreOnPage && data.length >= ddd.config.article_limit) {
                 var next = ddd.feeds.skip;
                 if (!next) next = 0;
-                ddd.feeds.skip = next + ddd.config.ARTICLE_LIMIT;
+                ddd.feeds.skip = next + ddd.config.article_limit;
             }
             $('#view-feed .scroll').html(html);
             ddd.pub('adjustCommentsSection');
@@ -864,8 +864,6 @@ dddns['ddd'] = function(w) {
                 var feedli = $('#feed-' + feed.id);
                 if (feedli.length === 0) return;
                 $(feedli[0]).find('.count').text(feed.unread);
-            }
-            if (!unread_only) {
                 // need to mutate the read/unread state of articles
                 for (var i = 0, l = ddd.feed.currentHeadlines.length; i < l; i++) {
                     var a = ddd.feed.currentHeadlines[i];

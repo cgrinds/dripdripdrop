@@ -847,6 +847,11 @@ dddns['ddd'] = function(w) {
                 ddd.feed.replaceFeedUI(feed);
                 ddd.feeds.storeAgain(feed);
             }
+
+            // if the current feed is special also update the article's owner feed
+            if(ddd.feeds.currentID < 0) {
+              
+            }
         },
 
         markFeedRead: function(feed) {
@@ -860,10 +865,6 @@ dddns['ddd'] = function(w) {
                 ddd.feeds.removeFromStoreAndUi(feed);
                 ddd.feeds.feedsRemoved[feed.id] = feed;
             } else {
-                // just update the UI since it doesn't need to be removed
-                var feedli = $('#feed-' + feed.id);
-                if (feedli.length === 0) return;
-                $(feedli[0]).find('.count').text(feed.unread);
                 // need to mutate the read/unread state of articles
                 for (var i = 0, l = ddd.feed.currentHeadlines.length; i < l; i++) {
                     var a = ddd.feed.currentHeadlines[i];

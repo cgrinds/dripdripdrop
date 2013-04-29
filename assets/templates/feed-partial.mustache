@@ -1,15 +1,12 @@
 {{#icon}}
-<img class="fav" src="{{icon}}{{id}}.ico">
-{{/icon}}
-{{^icon}}
-<div class="number">{{i}}.</div>
+<img class="fav" src="{{icon}}{{feed.id}}.ico">
 {{/icon}}
 <div class="feed">
-    <b>{{{title}}}</b>
-    {{#updated}}
+    <b>{{{feed.title}}}</b>
+    {{#feed.updated}}
         <span class="metadata">
-            <span class="inline-block">{{updated}}</span> 
+            <span class="inline-block">{{feed.updated}}</span> 
         </span>
-    {{/updated}}
+    {{/feed.updated}}
 </div>
 

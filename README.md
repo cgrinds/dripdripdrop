@@ -22,7 +22,9 @@ You will need *Tiny Tiny RSS* installed on a machine, let's call that machine **
 
 1. Grab the latest [release](https://github.com/cgrinds/dripdripdrop/tree/master/dist).
 
-2. Untar the release on **ttrss-server** (for example tar xvf ddd-0.4.2.tgz). **There is no CORs support at the moment so it needs to be on the same host.**
+2. Untar the release on **ttrss-server** (for example tar xvf ddd-0.4.2.tgz). 
+If you have CORs enabled on your server - ddd will work fine, that's how I develop. 
+Laptop talks to ttrss server on a different machine.
 
 3. Copy `ddd/assets/js/config-dist.js` to `ddd/assets/js/config.js`.
 
@@ -41,11 +43,12 @@ Current Features
 - when you mark a feed read, moves you back to the list of feeds instead of leaving you on a blank page
 - feed favicons
 - link to original article
-- mark all read
-- add / remove new feeds
 - mark article read/unread
 - show unread / read
-- *NOT SUPPORTED YET* special feeds
+- mark all read
+- add / remove new feeds
+- [vimium style](http://gstaff.org/dripdripdrop/screenshots/links.png) link navigation
+- special feeds, enabled by default. disable in settings
 
 Technical Stuff
 ---------------

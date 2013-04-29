@@ -1,15 +1,17 @@
 <div class="post-content">
     <header>
+        {{#icon}}
+        <h1 class="normal">{{#icon}}<img class="fav" src="{{icon}}.ico">{{/icon}} {{feed_title}}</h1>
+        {{/icon}}
         <h1>
-            <a id="full_article" href="{{link}}" target="_blank">{{{title}}}<br>
+            <a id="full_article" href="{{article.link}}" target="_blank">{{{article.title}}}<br>
             </a>
         </h1>
         <p class="metadata">
-            <span class="inline-block">{{date}} {{#author}}by {{author}}{{/author}} </span> 
-            <span class="inline-block">{{time_ago}}{{#comments_count}} &middot; {{comments_count}} {{i_comment}}{{/comments_count}}</span>
+            <span class="inline-block">{{article.date}} {{#article.author}}by {{article.author}}{{/article.author}} </span> 
         </p>
     </header>
     <section class="grouped-tableview">
-        {{{content}}}
+        {{{article.content}}}
     </section>
 </div>

@@ -24,7 +24,9 @@ pre, code{
 button{
 	outline: 0;
 }
-
+.normal {
+    font-weight: normal;
+}
 #outdated-browser{
 	background-color: #fff;
 	text-align: center;
@@ -548,7 +550,6 @@ ol.grouped-tableview-links li>a:hover{
 	height: 9px;
 }
 .view .post-content pre,
-
 .link-text{
 	color: #385487;
 	font-weight: bold;
@@ -579,6 +580,32 @@ ol.grouped-tableview-links li>a:hover{
 }
 #app-desc{
 	margin-left: 67px;
+}
+
+#options-list{
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+#options-list li{
+	padding: 10px;
+	background-color: #eee;
+	margin-bottom: 2px;
+}
+#options-list li .label{
+	font-weight: bold;
+}
+#options-list .words {
+    vertical-align: middle;
+}
+#options-list input {
+    margin-right: 1em;
+}
+#view-settings .save {
+    float: right;
+}
+#view-settings .bottom {
+    margin-top: 1em;
 }
 
 /*

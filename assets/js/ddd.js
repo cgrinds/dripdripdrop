@@ -258,27 +258,31 @@ dddns['ddd'] = function(w) {
             var tmpl2 = tmpl('feed-partial');
 
             var hasIcon = feed.has_icon && ddd.config.iconPath;
-            if (hasIcon) feed.icon = ddd.config.iconPath;
-            var html = tmpl1.render(feed, {
+            var vars = {feed: feed};
+            if(hasIcon) vars.icon = ddd.config.iconPath;
+
+            var html = tmpl1.render(vars, {
                 feed_partial: tmpl2
             });
-            if (hasIcon) delete feed.icon;
             return html;
         },
         markupHeadline: function(article) {
+            var vars = {article: article};
             if(ddd.feeds.currentID < 0 && ddd.config.iconPath && typeof article.icon === 'undefined') {
               // show icon of feed when reading special feed
-              // HACK for now
               var feedsById = amplify.store('feeds-by-id');
-              var feed = feedsById[article.feed_id];
-              if(feed) {
-                var hasIcon = feed.has_icon;
-                if (hasIcon) article.icon = ddd.config.iconPath;
+              //debug code remove
+              if(feedsById) {
+                var feed = feedsById[article.feed_id];
+                if(feed && feed.has_icon) {
+                  vars.icon = ddd.config.iconPath;
+                  vars.feed_id = article.feed_id;
+                }
               }
             }
             article.url = '#/article/' + article.id;
             article.type = article.unread > 0 ? "unread" : "read";
-            return tmpl('headline', article);
+            return tmpl('headline', vars);
         },
         markupFeeds: function(data, i) {
             var html = '';
@@ -356,9 +360,10 @@ dddns['ddd'] = function(w) {
                     ddd.pub('logAPIError', 'news');
                 };
                 var unread_only = amplify.store('view-mode');
+                var cat = ddd.settings.show_special_folders ? "-4" : "-3";
                 msg = {
                     op: "getFeeds",
-                    cat_id: "-4", //exclude virtual feeds for the moment
+                    cat_id: cat,
                     unread_only: "" + unread_only,
                 };
                 //if(ddd.config.FEED_LIMIT) msg['limit'] = "" + ddd.config.FEED_LIMIT;
@@ -407,9 +412,10 @@ dddns['ddd'] = function(w) {
             };
 
             var unread_only = amplify.store('view-mode');
+            var cat = ddd.settings.show_special_folders ? "-4" : "-3";
             msg = {
                 op: "getFeeds",
-                cat_id: "-4", //exclude virtual feeds for the moment
+                cat_id: cat,
                 unread_only: "" + unread_only,
                 limit: "" + ddd.config.FEED_LIMIT,
                 offset: "" + ddd.feeds.skipFeeds,
@@ -508,7 +514,7 @@ dddns['ddd'] = function(w) {
                 return;
             }
             var feed_id = curFeed.id;
-            if (feed_id < 0) return;
+            //if (feed_id < 0) return;
 
             msg = {
                 op: "catchupFeed",
@@ -692,9 +698,8 @@ dddns['ddd'] = function(w) {
 
             // unfortunately the feeds need to be reloaded even when looking at headlines
             // otherwise when you go back up ther list of feeds will be wrong
-            ddd.feeds.reload(true);
             ddd.feeds.skipFeeds = 0;
-            ddd.feeds.render();
+            ddd.feeds.reload(true);
         },
 
         getConfig: function() {
@@ -735,10 +740,19 @@ dddns['ddd'] = function(w) {
 
     ddd.feed = {
         currentHeadlines: null,
-        renderTitle: function(feed, siz) {
+        renderTitle: function(feed, siz, article) {
             var hasIcon = feed.has_icon && ddd.config.iconPath;
+            var feed_icon_id = feed.id;
+            if(feed.id < 0 && article) {
+              var feedsById = amplify.store('feeds-by-id');
+              var realFeed = feedsById[article.feed_id];
+              if(realFeed.has_icon && ddd.config.iconPath) {
+                hasIcon = true;
+                feed_icon_id = realFeed.id;
+              }
+            }
             if (hasIcon) {
-              $(siz).html('<img class="fav" src=' + ddd.config.iconPath + feed.id + ".ico>" +
+              $(siz).html('<img class="fav" src=' + ddd.config.iconPath + feed_icon_id + ".ico>" +
                 feed.title);
             } else {
               $(siz).html(feed.title);
@@ -827,16 +841,55 @@ dddns['ddd'] = function(w) {
             ddd.pub('onRenderComments');
         },
 
-        updateFeedAndLs: function(feed, articleIndex) {
+        updateFeedAndLsAdd: function(feed, article, feed_id) {
+            if (feed) {
+                feed.unread = feed.unread + 1;
+                ddd.feeds.storeAgain(feed);
+                ddd.feed.addArticleToUI(article, feed);
+                ddd.feed.replaceFeedUI(feed);
+                
+                // advance the selection if marking unread from feed view
+                if (ddd.currentView === 'feed') {
+                    ddd.cmd_move_sel(1);
+                }
+                return;
+            }
+            // feed was not found in the feedsById map above
+            // that's OK that means this article was the last one in the feed and
+            // it has already been moved
+            feed = ddd.feeds.feedsRemoved[feed_id];
+            if (!feed) {
+                // not sure what to do here, can't find the feed in either map
+                return;
+            }
+            var feedsById = amplify.store('feeds-by-id');
+            feed.unread = 1;
+            var list = amplify.store('feeds');
+            list.splice(feed.index, 0, feed);
+            amplify.store('feeds', list);
+
+            delete ddd.feeds.feedsRemoved[feed.id];
+            feedsById[feed.id] = feed;
+            amplify.store('feeds-by-id', feedsById);
+            ddd.feed.addArticleToUI(article, feed);
+            ddd.feed.replaceFeedUI(feed);
+            ddd.feeds.render();
+        },
+
+        updateFeedAndLsRemove: function(feed, articleIndex) {
             feed.unread = feed.unread - 1;
             if(feed.unread <= 0) {
               ddd.feed.markFeedRead(feed);
+              if(articleIndex > -1) {
+                ddd.feed.currentHeadlines = [];
+                $('#dddlist').empty();
+              }
               return;
             }
 
             // remove the article from the list
             var unread_only = amplify.store('view-mode');
-            if (unread_only && articleIndex > 0) {
+            if (unread_only && articleIndex > -1) {
                 ddd.feed.currentHeadlines = ddd.remove(ddd.feed.currentHeadlines, articleIndex);
             }
             ddd.feed.renderHeadlines(ddd.feed.currentHeadlines);
@@ -857,12 +910,12 @@ dddns['ddd'] = function(w) {
             
             var feedsByMap = amplify.store('feeds-by-id');
             var feed = feedsByMap[ddd.feeds.currentID];
-            ddd.feed.updateFeedAndLs(feed, index);
+            ddd.feed.updateFeedAndLsRemove(feed, index);
 
             // if the current feed is special also update the article's owner feed
             if(ddd.feeds.currentID < 0) {
               feed = feedsByMap[article.feed_id];
-              ddd.feed.updateFeedAndLs(feed, -1);
+              ddd.feed.updateFeedAndLsRemove(feed, -1);
             }
         },
 
@@ -890,7 +943,7 @@ dddns['ddd'] = function(w) {
             // when the article was marked read the feed count was NOT decremented
             // in the store so no need to undo that
             if (!article) return;
-            if (ddd.feeds.currentID != article.feed_id) return;
+            //if (ddd.feeds.currentID != article.feed_id) return;
             var headlines = ddd.feed.currentHeadlines;
             var unread_only = amplify.store('view-mode');
             if (unread_only) {
@@ -899,9 +952,6 @@ dddns['ddd'] = function(w) {
                 headlines.splice(article.i - 1, 0, article); // i is the display index which is 1 based
             }
             ddd.feed.renderHeadlines(headlines);
-
-            // update the feeds list too since the unread count changed
-            ddd.feed.replaceFeedUI(feed);
         },
 
         replaceFeedUI: function(feed) {
@@ -965,8 +1015,9 @@ dddns['ddd'] = function(w) {
             var article = headlines[index];
             if (!article) return;
             ddd.article.currentArticle = article;
-            var feed = amplify.store('feeds-by-id')[ddd.feeds.currentID];
-            ddd.feed.renderTitle(feed, '#view-article h1')
+            var feedsByMap = amplify.store('feeds-by-id');
+            var feed = feedsByMap[ddd.feeds.currentID];
+            ddd.feed.renderTitle(feed, '#view-article h1', article)
             ddd.feed.markArticleRead(article, index);
 
             article.hasContent = true;
@@ -975,9 +1026,16 @@ dddns['ddd'] = function(w) {
             }
             back = '#/feed/' + article.feed_id;
             $('#view-article .header-back-button').attr('href', back);
-
+            
+            var vars = {article: article};
+            if(ddd.feeds.currentID < 0) {
+              var parentFeed = feedsByMap[article.feed_id];
+              if(parentFeed.has_icon && ddd.config.iconPath)
+                vars.icon = ddd.config.iconPath + article.feed_id;
+                vars.feed_title = parentFeed.title;
+            }
             var tmpl1 = tmpl('article');
-            $('#view-article .scroll').html(tmpl1.render(article));
+            $('#view-article .scroll').html(tmpl1.render(vars));
         },
 
         cmd_next: function(dir) {
@@ -1046,38 +1104,29 @@ dddns['ddd'] = function(w) {
             };
             ttrss.updateArticle(msg, function() {}, function() {});
 
-            var feed = amplify.store('feeds-by-id')[article.feed_id];
-            if (feed) {
-                feed.unread = feed.unread + 1;
-                ddd.feeds.storeAgain(feed);
-                ddd.feed.addArticleToUI(article, feed);
-                // advance the selection if marking unread from feed view
-                if (ddd.currentView === 'feed') {
-                    ddd.cmd_move_sel(1);
-                }
-                return;
+            var feedsByMap = amplify.store('feeds-by-id');
+            var feed = feedsByMap[ddd.feeds.currentID];
+            ddd.feed.updateFeedAndLsAdd(feed, article, ddd.feeds.currentID)
+          
+            if(ddd.feeds.currentID < 0) {
+              feed = feedsByMap[article.feed_id];
+              ddd.feed.updateFeedAndLsAdd(feed, null, article.feed_id);
             }
-            // feed was not found in the feedsById map above
-            // that's OK that means this article was the last one in the feed and
-            // it has already been moved
-            feed = ddd.feeds.feedsRemoved[article.feed_id];
-            if (!feed) {
-                // not sure what to do here, can't find the feed in either map
-                return;
-            }
-            var feedsById = amplify.store('feeds-by-id');
-            feed.unread = 1;
-            var list = amplify.store('feeds');
-            list.splice(feed.index, 0, feed);
-            amplify.store('feeds', list);
-
-            delete ddd.feeds.feedsRemoved[article.feed_id];
-            feedsById[article.feed_id] = feed;
-            amplify.store('feeds-by-id', feedsById);
-            ddd.feed.addArticleToUI(article, feed);
-            ddd.feeds.render();
         },
+    };
 
+    ddd.settingsView = {
+      render: function() {
+        var settings = ddd.settings;
+
+        $('input[name="ddd:config:show_special_folders"]').prop('checked', settings.show_special_folders);
+        $('#view-settings .save').on('click', function(){
+          settings.show_special_folders = $('input[name="ddd:config:show_special_folders"]').is(':checked');
+
+          amplify.store('settings', settings);
+          ruto.go('/');
+        });
+      },
     };
 
     ddd.resetSelections = function() {
@@ -1102,6 +1151,8 @@ dddns['ddd'] = function(w) {
     };
 
     ddd.init = function() {
+        ddd.settings = amplify.store('settings');
+        if(!ddd.settings) ddd.settings = ddd.config;
         var unread_only = amplify.store('view-mode');
         if (unread_only === undefined)
             amplify.store('view-mode', true);
@@ -1343,7 +1394,9 @@ dddns['ddd'] = function(w) {
           ddd.feed.showSelection();
         })
         .add('/about', 'about')
-        .add('/settings', 'settings')
+        .add('/settings', 'settings', function(){
+          ddd.settingsView.render();
+        })
         .add('/login', 'login')
         .add('/login_submit', function(path) {
         ddd.login.attempt_login();

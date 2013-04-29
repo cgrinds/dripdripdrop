@@ -1,13 +1,13 @@
-<li id="feed-{{id}}" data-index="{{i}}" class="{{type}}">
-    {{#urlid}}
-	<a href="#/feed/{{urlid}}" class="">
-    {{/urlid}}
-    {{^urlid}}
-	<a href="#/feed/{{id}}" class="">
-    {{/urlid}}
+<li id="feed-{{feed.id}}" data-index="{{feed.i}}" class="{{feed.type}}">
+    {{#feed.urlid}}
+	<a href="#/feed/{{feed.urlid}}" class="">
+    {{/feed.urlid}}
+    {{^feed.urlid}}
+	<a href="#/feed/{{feed.id}}" class="">
+    {{/feed.urlid}}
 		{{>feed_partial}}
 	</a>
-	{{#unread}}
-		<span class="count">{{unread}}</span></a>
-	{{/unread}}
+	{{feed.#unread}}
+		<span class="count">{{feed.unread}}</span></a>
+	{{feed./unread}}
 </li>

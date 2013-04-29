@@ -817,7 +817,7 @@ dddns['ddd'] = function(w) {
             ddd.pub('onRenderComments');
         },
 
-        markRead: function(article, index) {
+        markArticleRead: function(article, index) {
             if (!article) return;
             if (!article.unread) return;
             article.unread = false;
@@ -955,7 +955,7 @@ dddns['ddd'] = function(w) {
             ddd.article.currentArticle = article;
             var feed = amplify.store('feeds-by-id')[ddd.feeds.currentID];
             ddd.feed.renderTitle(feed, '#view-article h1')
-            ddd.feed.markRead(article, index);
+            ddd.feed.markArticleRead(article, index);
 
             article.hasContent = true;
             if (article.updated) {
@@ -1199,7 +1199,7 @@ dddns['ddd'] = function(w) {
                 var article = headlines[sel.sel];
                 to_open = article.link;
                 if (!to_open) return;
-                ddd.feed.markRead(article, sel.sel);
+                ddd.feed.markArticleRead(article, sel.sel);
             }
         }
         if (!to_open) return;

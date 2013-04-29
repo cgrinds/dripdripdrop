@@ -1,9 +1,16 @@
 <li id="article-{{id}}" data-index="{{i}}" class="{{type}}">
 	<a href="#/article/{{id}}/{{i}}" class="">
-		<div class="number">{{i}}.</div>
+        {{#icon}}
+        <img class="fav" src="{{icon}}{{feed_id}}.ico">
+        {{/icon}}
+        {{^icon}}
+        <div class="number">{{i}}.</div>
+        {{/icon}}
 		<div class="feed">
 			<b>{{{title}}}</b>
 		</div>
 	</a>
 </li>
+
+
 

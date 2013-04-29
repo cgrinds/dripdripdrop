@@ -266,6 +266,16 @@ dddns['ddd'] = function(w) {
             return html;
         },
         markupHeadline: function(article) {
+            if(ddd.feeds.currentID < 0 && ddd.config.iconPath && typeof article.icon === 'undefined') {
+              // show icon of feed when reading special feed
+              // HACK for now
+              var feedsById = amplify.store('feeds-by-id');
+              var feed = feedsById[article.feed_id];
+              if(feed) {
+                var hasIcon = feed.has_icon;
+                if (hasIcon) article.icon = ddd.config.iconPath;
+              }
+            }
             article.url = '#/article/' + article.id;
             article.type = article.unread > 0 ? "unread" : "read";
             return tmpl('headline', article);
@@ -774,7 +784,7 @@ dddns['ddd'] = function(w) {
             ttrss.headlines(msg, function(data) {
                 loadingHeadlines = false;
                 if (ddd.feeds.currentID != id) return;
-                ddd.feed.renderHeadlines(data, id);
+                ddd.feed.renderHeadlines(data);
                 ddd.feed.showSelection();
             }, function(e) {
                 loadingHeadlines = false;
@@ -796,7 +806,7 @@ dddns['ddd'] = function(w) {
             $(items[sel.sel]).addClass('sel');
         },
 
-        renderHeadlines: function(_data, feed_id) {
+        renderHeadlines: function(_data) {
             if (!_data) return;
             var data = _data.slice(),
                 tmpl1 = tmpl('feeds-load');
@@ -817,6 +827,23 @@ dddns['ddd'] = function(w) {
             ddd.pub('onRenderComments');
         },
 
+        updateFeedAndLs: function(feed, articleIndex) {
+            feed.unread = feed.unread - 1;
+            if(feed.unread <= 0) {
+              ddd.feed.markFeedRead(feed);
+              return;
+            }
+
+            // remove the article from the list
+            var unread_only = amplify.store('view-mode');
+            if (unread_only && articleIndex > 0) {
+                ddd.feed.currentHeadlines = ddd.remove(ddd.feed.currentHeadlines, articleIndex);
+            }
+            ddd.feed.renderHeadlines(ddd.feed.currentHeadlines);
+            ddd.feed.replaceFeedUI(feed);
+            ddd.feeds.storeAgain(feed);
+        },
+
         markArticleRead: function(article, index) {
             if (!article) return;
             if (!article.unread) return;
@@ -827,27 +854,15 @@ dddns['ddd'] = function(w) {
                 field: "2"
             };
             ttrss.updateArticle(msg, function() {}, function() {});
-
+            
             var feedsByMap = amplify.store('feeds-by-id');
             var feed = feedsByMap[ddd.feeds.currentID];
-            feed.unread = feed.unread - 1;
-            if(feed.unread <= 0) {
-              ddd.feed.markFeedRead(feed);
-              return;
-            }
-
-            // remove the article from the list
-            var unread_only = amplify.store('view-mode');
-            if (unread_only) {
-                ddd.feed.currentHeadlines = ddd.remove(ddd.feed.currentHeadlines, index);
-            }
-            ddd.feed.renderHeadlines(ddd.feed.currentHeadlines, ddd.feeds.currentID);
-            ddd.feed.replaceFeedUI(feed);
-            ddd.feeds.storeAgain(feed);
+            ddd.feed.updateFeedAndLs(feed, index);
 
             // if the current feed is special also update the article's owner feed
             if(ddd.feeds.currentID < 0) {
-              
+              feed = feedsByMap[article.feed_id];
+              ddd.feed.updateFeedAndLs(feed, -1);
             }
         },
 
@@ -883,7 +898,7 @@ dddns['ddd'] = function(w) {
                 // already have the article in the list
                 headlines.splice(article.i - 1, 0, article); // i is the display index which is 1 based
             }
-            ddd.feed.renderHeadlines(headlines, article.feed_id);
+            ddd.feed.renderHeadlines(headlines);
 
             // update the feeds list too since the unread count changed
             ddd.feed.replaceFeedUI(feed);

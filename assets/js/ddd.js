@@ -233,15 +233,26 @@ dddns['ddd'] = function(w) {
         skip: 0,
         skipFeeds: 0,
         feedsRemoved: {},
+        specialIdToName: {
+          1 : "starred",
+          2 : "published",
+          3 : "fresh",
+          4 : "all",
+          6 : "recent",
+        },
+        specialNameToId: {
+           "starred"   : -1, 
+           "published" : -2,
+           "fresh"     : -3,
+           "all"       : -4,
+           "recent"    : -6,
+        },
+
         markupFeed: function(feed) {
             feed.type = feed.unread > 0 ? "unread" : "read";
             if (feed.title === "") feed.title = "&nbsp;";
             if (feed.id < 0) {
-                if (feed.id === -1) feed.urlid = "starred";
-                else if (feed.id === -2) feed.urlid = "published";
-                else if (feed.id === -3) feed.urlid = "fresh";
-                else if (feed.id === -4) feed.urlid = "all";
-                else if (feed.id === -6) feed.urlid = "recent";
+              feed.urlid = ddd.feeds.specialIdToName[-feed.id];
             }
             var tmpl1 = tmpl('feeds');
             var tmpl2 = tmpl('feed-partial');
@@ -337,8 +348,8 @@ dddns['ddd'] = function(w) {
                 var unread_only = amplify.store('view-mode');
                 msg = {
                     op: "getFeeds",
-                    cat_id: "-3", //exclude virtual feeds for the moment
-                    unread_only: unread_only ? "true" : "false",
+                    cat_id: "-4", //exclude virtual feeds for the moment
+                    unread_only: "" + unread_only,
                 };
                 //if(ddd.config.FEED_LIMIT) msg['limit'] = "" + ddd.config.FEED_LIMIT;
 
@@ -388,8 +399,8 @@ dddns['ddd'] = function(w) {
             var unread_only = amplify.store('view-mode');
             msg = {
                 op: "getFeeds",
-                cat_id: "-3", //exclude virtual feeds for the moment
-                unread_only: unread_only ? "true" : "false",
+                cat_id: "-4", //exclude virtual feeds for the moment
+                unread_only: "" + unread_only,
                 limit: "" + ddd.config.FEED_LIMIT,
                 offset: "" + ddd.feeds.skipFeeds,
             };
@@ -829,7 +840,7 @@ dddns['ddd'] = function(w) {
             var feedsByMap = amplify.store('feeds-by-id');
             var feed = feedsByMap[ddd.feeds.currentID];
             feed.unread = feed.unread - 1;
-            if (feed.unread <= 0 && amplify.store('view-mode')) {
+            if (feed.unread <= 0 && unread_only) {
                 ddd.feeds.removeFromStoreAndUi(feed);
                 ddd.feeds.feedsRemoved[feed.id] = feed;
             } else {
@@ -1009,9 +1020,7 @@ dddns['ddd'] = function(w) {
         },
 
         cmd_markUnread: function() {
-            console.log('mark unread');
             if (ddd.currentView === 'home') return;
-            //if(ddd.currentView !== 'article') return;
             var article = ddd.article.currentArticle;
             if (ddd.currentView === 'feed') {
                 var sel = ddd.getSel();
@@ -1032,7 +1041,6 @@ dddns['ddd'] = function(w) {
                 feed.unread = feed.unread + 1;
                 ddd.feeds.storeAgain(feed);
                 ddd.feed.addArticleToUI(article, feed);
-                ddd.feed.renderHeadlines(ddd.feed.currentHeadlines, ddd.feeds.currentID);
                 // advance the selection if marking unread from feed view
                 if (ddd.currentView === 'feed') {
                     ddd.cmd_move_sel(1);
@@ -1134,7 +1142,10 @@ dddns['ddd'] = function(w) {
             // instead of ruto.back() use this since if you view multiple articles via Shift-J up doesnt
             // really do what you want
             if(!ddd.feeds.currentID) return;
-            ruto.go('/feed/' + ddd.feeds.currentID);
+            if(ddd.feeds.currentID < 0)
+              ruto.go('/feed/' + ddd.feeds.specialIdToName[-ddd.feeds.currentID]);
+            else
+              ruto.go('/feed/' + ddd.feeds.currentID);
             return;
         }
         ruto.go('/')
@@ -1331,12 +1342,8 @@ dddns['ddd'] = function(w) {
         ddd.feed.render(id);
     })
         .add(/^\/feed\/(\w+)$/i, 'feed', function(path, name) {
-        if (name === "starred") id = -1;
-        else if (name === "published") id = -2;
-        else if (name === "fresh") id = -3;
-        else if (name === "all") id = -4;
-        else if (name === "recent") id = -6;
-        ddd.feed.render(id);
+          var id = ddd.feeds.specialNameToId[name];
+          ddd.feed.render(id);
     })
         .add(/^\/article\/(\d+)\/(\d+)$/i, 'article', function(path, id, index) {
         ddd.article.render(id, index - 1);

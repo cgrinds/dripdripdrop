@@ -828,25 +828,22 @@ dddns['ddd'] = function(w) {
             };
             ttrss.updateArticle(msg, function() {}, function() {});
 
+            var feedsByMap = amplify.store('feeds-by-id');
+            var feed = feedsByMap[ddd.feeds.currentID];
+            feed.unread = feed.unread - 1;
+            if(feed.unread <= 0) {
+              ddd.feed.markFeedRead(feed);
+              return;
+            }
+
             // remove the article from the list
             var unread_only = amplify.store('view-mode');
             if (unread_only) {
                 ddd.feed.currentHeadlines = ddd.remove(ddd.feed.currentHeadlines, index);
             }
             ddd.feed.renderHeadlines(ddd.feed.currentHeadlines, ddd.feeds.currentID);
-
-            // now update the unread count on the feed
-            // first update our local cache
-            var feedsByMap = amplify.store('feeds-by-id');
-            var feed = feedsByMap[ddd.feeds.currentID];
-            feed.unread = feed.unread - 1;
-            if (feed.unread <= 0 && unread_only) {
-                ddd.feeds.removeFromStoreAndUi(feed);
-                ddd.feeds.feedsRemoved[feed.id] = feed;
-            } else {
-                ddd.feed.replaceFeedUI(feed);
-                ddd.feeds.storeAgain(feed);
-            }
+            ddd.feed.replaceFeedUI(feed);
+            ddd.feeds.storeAgain(feed);
 
             // if the current feed is special also update the article's owner feed
             if(ddd.feeds.currentID < 0) {
@@ -867,8 +864,7 @@ dddns['ddd'] = function(w) {
             } else {
                 // need to mutate the read/unread state of articles
                 for (var i = 0, l = ddd.feed.currentHeadlines.length; i < l; i++) {
-                    var a = ddd.feed.currentHeadlines[i];
-                    a.unread = false;
+                    ddd.feed.currentHeadlines[i].unread = false;
                 }
                 $('#view-feed .unread').attr('class', 'read');
                 ddd.feed.replaceFeedUI(feed);

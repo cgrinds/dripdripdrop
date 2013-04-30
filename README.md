@@ -23,8 +23,8 @@ You will need *Tiny Tiny RSS* installed on a machine, let's call that machine **
 1. Grab the latest [release](https://github.com/cgrinds/dripdripdrop/tree/master/dist).
 
 2. Untar the release on **ttrss-server** (for example tar xvf ddd-0.4.2.tgz). 
-If you have CORs enabled on your server - ddd will work fine, that's how I develop. 
-Laptop talks to ttrss server on a different machine.
+If you have CORs enabled on your server - ddd will work fine. That's how I develop, 
+the laptop talks to ttrss server on a different machine.
 
 3. Copy `ddd/assets/js/config-dist.js` to `ddd/assets/js/config.js`.
 
@@ -48,7 +48,7 @@ Current Features
 - mark all read
 - add / remove new feeds
 - [vimium style](http://gstaff.org/dripdripdrop/screenshots/links.png) link navigation
-- special feeds, enabled by default. disable in settings
+- special feeds, disabled by default. enable in settings
 
 Technical Stuff
 ---------------

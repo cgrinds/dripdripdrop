@@ -11,7 +11,7 @@
     // Turn auto refresh off with -1
     refresh_every:  15,
 
-    show_special_folders: true,
+    show_special_folders: false,
   };
 
   window._ddd_config = config;

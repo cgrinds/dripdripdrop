@@ -165,25 +165,23 @@ dddns['ddd-plat'] = function(w) {
                     break;
                 case 'login':
                     console.log('LOGIN screen!!!!!!!!!!!!');
-                    $('#overlay').removeClass('hide');
                     var view = $('#view-login');
                     if (!isWideScreen) {
                         if (!currentView) {
                             hideAllViews();
                             view.removeClass('hidden');
-                        } else if (currentView != 'login') {
+                        } else if (currentView !== 'login') {
                             flip({ in : view,
-                                out: $('#view-home'),
-                                direction: 'clockwise'
+                                out: $('#view-' + currentView),
+                                direction: 'ltr'
                             });
                         }
                     } else {
+                        hideAllViews();
+                        $('#overlay').addClass('hide');
                         view.removeClass('hidden');
                         $('#view-home').removeClass('hidden');
                         $('#view-comments').removeClass('hidden');
-                        setTimeout(function() {
-                            $('#overlay').removeClass('hide');
-                        }, 1);
                     }
                     ddd.currentView = 'login';
                     break;

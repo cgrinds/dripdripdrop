@@ -34,7 +34,7 @@ dddns['ddd'] = function(w) {
             if (!pubsubCache[topic]) pubsubCache[topic] = [];
             pubsubCache[topic].push(fn);
         },
-        prevView: null,
+        prevHref: null,
         currentView: null,
         hideAllViews: function() {
             var views = d.querySelectorAll('.view');
@@ -1025,6 +1025,12 @@ dddns['ddd'] = function(w) {
                 article.date = ddd.formatDate(article.updated, true);
             }
             back = '#/feed/' + article.feed_id;
+            if (ddd.settings.show_special_folders) {
+              var match = ddd.prevHref.match(/\/feed\/(\w+)$/i);
+              if(match) {
+                back = '#/feed/' + match[1];
+              }
+            }
             $('#view-article .header-back-button').attr('href', back);
             
             var vars = {article: article};
@@ -1383,7 +1389,7 @@ dddns['ddd'] = function(w) {
             ddd.hideAllViews();
             var view = $('#view-' + name);
             $(view).removeClass('hidden');
-            ddd.prevView = ddd.currentView;
+            ddd.prevHref = this.previous;
             ddd.currentView = name;
         },
         notfound: function() {

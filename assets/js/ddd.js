@@ -380,6 +380,9 @@ dddns['ddd'] = function(w) {
                         var item = data[i];
                         item.index = i;
                         byId[item.id] = item;
+                        // sigh, special feeds return unread as a string instead of an int
+                        if(item.id < 0)
+                          item.unread = parseInt(item.unread, 10);
                     }
                     amplify.store('feeds', data);
                     amplify.store('feeds-by-id', byId);
@@ -736,11 +739,80 @@ dddns['ddd'] = function(w) {
             var feedli = $('#feed-' + feed.id);
             feedli.remove();
         },
+
+        cmd_toggleStar: function() {
+            if (ddd.currentView === 'home') return;
+            var article = ddd.article.currentArticle;
+            var sel = ddd.getSel();
+            if (ddd.currentView === 'feed') {
+                article = ddd.feed.currentHeadlines[sel.sel];
+            }
+            if (!article) return;
+            article.marked = !article.marked;
+            msg = {
+                article_ids : "" + article.id,
+                mode        : "2", //toggle
+                field       : "0"
+            };
+            ttrss.updateArticle(msg, function() {}, function() {});
+
+            var feedsByMap = amplify.store('feeds-by-id');
+            var feed = feedsByMap[ddd.feeds.currentID];
+            if(!feed) feed = ddd.feeds.feedsRemoved[ddd.feeds.currentID];
+            if(!feed) return;
+            if (ddd.currentView === 'article') {
+              ddd.feed.renderTitle(feed, '#view-article .meta', article);
+            }
+            //ddd.pub('onStar', {article: article, feed: feed});
+
+            if(ddd.currentView === "feed") {
+              if(ddd.feeds.currentID === -1) {
+                if(article.unread && !article.marked)
+                  ddd.feed.updateFeedAndLsRemove(feed, -1);
+              } else {
+                $($(sel.siz)[sel.sel]).replaceWith(ddd.feeds.markupHeadline(article));
+              }
+              ddd.feed.showSelection();
+              return;
+            }
+            // in all cases if the article is unread update starred articles unread count
+            if (ddd.settings.show_special_folders) {
+              ddd.feeds.updateSpecialCounts();
+            }
+        },
+
+        updateSpecialCounts: function() {
+          var unread_only = amplify.store('view-mode');
+          var feedsByMap = amplify.store('feeds-by-id');
+          msg = {
+              op: "getFeeds",
+              cat_id: -1,
+              unread_only: "" + unread_only,
+          };
+          ttrss.feeds(msg, function(data) {
+              if (!data || data.error) {
+                  showError();
+                  return;
+              }
+              for (var i = 0, l = data.length; i < l; i++) {
+                  var newItem = data[i];
+                  var feed = feedsByMap[newItem.id];
+                  var newUnread = parseInt(newItem.unread, 10);
+                  if(newUnread != feed.unread) {
+                    feed.unread = newUnread;
+                    $('#feed-' + feed.id).replaceWith(ddd.feeds.markupFeed(feed));
+                  }
+              }
+              amplify.store('feeds', data);
+              amplify.store('feeds-by-id', feedsByMap);
+          });
+        }
     };
 
     ddd.feed = {
         currentHeadlines: null,
         renderTitle: function(feed, siz, article) {
+            var html;
             var hasIcon = feed.has_icon && ddd.config.iconPath;
             var feed_icon_id = feed.id;
             if(feed.id < 0 && article) {
@@ -752,11 +824,14 @@ dddns['ddd'] = function(w) {
               }
             }
             if (hasIcon) {
-              $(siz).html('<img class="fav" src=' + ddd.config.iconPath + feed_icon_id + ".ico>" +
-                feed.title);
+              html = '<img class="fav" src=' + ddd.config.iconPath + feed_icon_id + ".ico>" + feed.title;
             } else {
-              $(siz).html(feed.title);
+              html = feed.title;
             }
+            if(article && article.marked) {
+              html += ' <div class="meta">' + '<a class="header-button header-button-icon header-button-right" id="view-home-settings"><button><i class="icon-star">Star</i></button></a></div>';
+            }
+            $(siz).html(html);
         },
 
         render: function(_id, _feed) {
@@ -856,7 +931,7 @@ dddns['ddd'] = function(w) {
             }
             // feed was not found in the feedsById map above
             // that's OK that means this article was the last one in the feed and
-            // it has already been moved
+            // it has already been removed
             feed = ddd.feeds.feedsRemoved[feed_id];
             if (!feed) {
                 // not sure what to do here, can't find the feed in either map
@@ -1040,6 +1115,7 @@ dddns['ddd'] = function(w) {
                 vars.icon = ddd.config.iconPath + article.feed_id;
                 vars.feed_title = parentFeed.title;
             }
+
             var tmpl1 = tmpl('article');
             $('#view-article .scroll').html(tmpl1.render(vars));
         },
@@ -1332,7 +1408,7 @@ dddns['ddd'] = function(w) {
             return;
         }
         //items = $('dddlist').querySelectorAll('li');
-        items = $(sel.siz);
+        var items = $(sel.siz);
 
         if (sel.sel >= items.length) {
             sel.sel = items.length - 1;

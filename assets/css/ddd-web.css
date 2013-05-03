@@ -45,6 +45,29 @@ button{
 	overflow: hidden;
 	text-indent: -999px;
 }
+.icon-star{
+	display: inline-block;
+	width: 20px;
+	height: 20px;
+	background: transparent url(../images/web/star_20.png) no-repeat;
+	background-size: 20px 20px;
+	vertical-align: text-bottom;
+	overflow: hidden;
+	text-indent: -999px;
+}
+.icon-star-16 {
+	display: inline-block;
+	width: 16px;
+	height: 16px;
+	background-size: 16px 16px;
+	overflow: hidden;
+    position: absolute;
+    top: 33%;
+    right: 5px;
+    padding: 0;
+    margin: 0 auto;
+    z-index: 2;
+}
 
 .view{
 	position: relative;
@@ -365,7 +388,7 @@ h1 .fav{
 .count {
 	opacity: .5;
     position: absolute;
-    top: 40%;
+    top: 33%;
     right: 0;
     padding: 0;
     margin: 0 auto;

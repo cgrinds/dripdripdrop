@@ -152,6 +152,10 @@ dddns['ddd-plat'] = function(w) {
             decorateLinks();
             return false;
         });
+        Mousetrap.bind('s', function() {
+            ddd.feeds.cmd_toggleStar();
+            return false;
+        });
     };
 
     var addDialogKeys = function() {

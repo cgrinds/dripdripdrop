@@ -387,6 +387,8 @@ body:not(.ios5) .view>.scroll:before{
 	display: -webkit-box;
 	display: box;
 	width: 100%;
+	overflow: hidden;
+	text-overflow: ellipsis;
 }
 .tableview-links li>a{
 	font-size: 15px;

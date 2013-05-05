@@ -1,6 +1,6 @@
 module.exports = function(grunt) {
   var libCommon = [
-    'assets/js/libs/zepto.js',
+    'assets/js/libs/min.js',
     'assets/js/libs/ruto.js',
     'assets/js/libs/amplify.store.js',
     'assets/js/libs/hogan.js',
@@ -31,7 +31,6 @@ module.exports = function(grunt) {
   uglifyIos.push('assets/js/ddd-ios.js');
  
   var tmpl = grunt.file.read('assets/js/templates.js');
-  var hashes = grunt.file.readJSON('hashes.json');
 
   var to_copy = [
     'assets/js/config-dist.js',
@@ -71,6 +70,9 @@ module.exports = function(grunt) {
             warnings      : true,
             //screw_ie8     : true,
           },
+          mangle: {
+            toplevel: true,
+          }
 				},
 				files: {
 					'ddd.min/ddd.min.web.js': 'ddd.min/ddd.web.js'

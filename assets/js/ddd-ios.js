@@ -8,7 +8,7 @@ dddns['ddd-plat'] = function(w) {
             anticlockwise: ['flip-out-to-right', 'flip-in-from-right']
         },
         flip = function(opts) {
-            var inEl = opts. in ,
+            var inEl = opts.in ,
                 outEl = opts.out,
                 //inClass = inEl.classList,
                 //outClass = outEl.classList,
@@ -16,22 +16,22 @@ dddns['ddd-plat'] = function(w) {
                 fn = opts.fn,
                 wise = flipWise[direction],
                 reset = function() {
-                    $(inEl).off('webkitAnimationEnd', reset, false);
+                    inEl.removeEventListener('webkitAnimationEnd', reset, false);
                     //body.classList.remove('viewport-flip');
-                    $(outEl).addClass('hidden');
-                    $(inEl).removeClass('flip');
-                    $(outEl).removeClass('flip');
-                    $(outEl).removeClass(wise[0]);
-                    $(inEl).removeClass(wise[1]);
+                    outEl.classList.add('hidden');
+                    inEl.classList.remove('flip');
+                    outEl.classList.remove('flip');
+                    outEl.classList.remove(wise[0]);
+                    inEl.classList.remove(wise[1]);
                     if (fn) fn.apply();
                 };
             //body.classList.add('viewport-flip');
-            $(inEl).removeClass('hidden');
-            $(outEl).addClass('flip');
-            $(inEl).addClass('flip');
-            $(inEl).on('webkitAnimationEnd', reset, false);
-            $(outEl).addClass(wise[0]);
-            $(inEl).addClass(wise[1]);
+            inEl.classList.remove('hidden');
+            outEl.classList.add('flip');
+            inEl.classList.add('flip');
+            inEl.on('webkitAnimationEnd', reset, false);
+            outEl.classList.add(wise[0]);
+            inEl.classList.add(wise[1]);
         },
         slideWise = {
             rtl: ['slide-out-to-left', 'slide-in-from-right'],
@@ -50,22 +50,22 @@ dddns['ddd-plat'] = function(w) {
                 fn = opts.fn,
                 wise = slideWise[direction],
                 reset = function() {
-                    $(inEl).off('webkitAnimationEnd', reset, false);
-                    $(outEl).addClass('hidden');
-                    $(inEl).removeClass('sliding');
-                    $(outEl).removeClass('sliding');
-                    $(outEl).removeClass(wise[0]);
-                    $(inEl).removeClass(wise[1]);
+                    inEl.removeEventListener('webkitAnimationEnd', reset, false);
+                    outEl.classList.add('hidden');
+                    inEl.classList.remove('sliding');
+                    outEl.classList.remove('sliding');
+                    outEl.classList.remove(wise[0]);
+                    inEl.classList.remove(wise[1]);
                     //inHeaderClass.remove('transparent');
                     //outHeaderClass.remove('transparent');
                     if (fn) fn.apply();
                 };
-            $(inEl).removeClass('hidden');
-            $(outEl).addClass('sliding');
-            $(inEl).addClass('sliding');
-            $(inEl).on('webkitAnimationEnd', reset, false);
-            $(outEl).addClass(wise[0]);
-            $(inEl).addClass(wise[1]);
+            inEl.classList.remove('hidden');
+            outEl.classList.add('sliding');
+            inEl.classList.add('sliding');
+            inEl.on('webkitAnimationEnd', reset, false);
+            outEl.classList.add(wise[0]);
+            inEl.classList.add(wise[1]);
 
             //inHeaderClass.add('transparent');
             //outHeaderClass.add('transparent');
@@ -88,8 +88,7 @@ dddns['ddd-plat'] = function(w) {
     var ua = navigator.userAgent,
         isIPhoneIPod = ua && /iPhone|iPod/.test(ua),
         isIOS5 = parseInt((ua.match(/ OS (\d+)_/i) || [, 0])[1], 10) < 6;
-    if (isIPhoneIPod && isIOS5) $(body).addClass('ios5');
-    console.log('hi2');
+    if (isIPhoneIPod && isIOS5) $(body).classList.add('ios5');
 
     // Wide screen state
     var isWideScreen = getScreenState() == 'wide';
@@ -106,7 +105,6 @@ dddns['ddd-plat'] = function(w) {
 
     ruto.config({
         before: function(path, name, matches) {
-            console.log('ddd path=' + path + ' name=' + name + ' matches=', matches);
             var currentView = ddd.currentView;
             var hideAllViews = ddd.hideAllViews;
             switch (name) {
@@ -115,7 +113,7 @@ dddns['ddd-plat'] = function(w) {
                     if (!isWideScreen) {
                         if (!currentView) {
                             hideAllViews();
-                            view.removeClass('hidden');
+                            view.classList.remove('hidden');
                         } else if (currentView == 'about') {
                             flip({ in : view,
                                 out: $('#view-' + currentView),
@@ -129,13 +127,14 @@ dddns['ddd-plat'] = function(w) {
                         }
                     } else {
                         hideAllViews();
-                        $('#overlay').addClass('hide');
-                        view.removeClass('hidden');
+                        $('#overlay').classList.add('hide');
+                        view.classList.remove('hidden');
                         var viewComments = $('#view-feed');
-                        viewComments.removeClass('hidden');
-                        viewComments.find('section').html('<div class="view-blank-state"><div class="view-blank-state-text">No Feed Selected.</div></div>');
-                        viewComments.find('header h1').innerHTML = '';
-                        viewComments.find('header a.header-back-button').css('display', 'none');
+                        viewComments.classList.remove('hidden');
+                        viewComments.querySelectorAll('section').innerHTML = '<div class="view-blank-state"><div class="view-blank-state-text">No Feed Selected.</div></div>';
+                        viewComments.querySelectorAll('header h1').innerHTML = '';
+                        var button = viewComments.querySelectorAll('header a.header-back-button');
+                        if(button.length > 0) button.style.display = 'none';
                         ddd.feeds.currentID = null;
                         ddd.pub('selectCurrentStory');
                     }
@@ -146,7 +145,7 @@ dddns['ddd-plat'] = function(w) {
                     if (!isWideScreen) {
                         if (!currentView) {
                             hideAllViews();
-                            view.removeClass('hidden');
+                            view.classList.remove('hidden');
                         } else if (currentView != 'about') {
                             flip({ in : view,
                                 out: $('#view-home'),
@@ -154,22 +153,21 @@ dddns['ddd-plat'] = function(w) {
                             });
                         }
                     } else {
-                        view.removeClass('hidden');
-                        $('#view-home').removeClass('hidden');
-                        $('#view-comments').removeClass('hidden');
+                        view.classList.remove('hidden');
+                        $('#view-home').classList.remove('hidden');
+                        $('#view-comments').classList.remove('hidden');
                         setTimeout(function() {
-                            $('#overlay').removeClass('hide');
+                            $('#overlay').classList.remove('hide');
                         }, 1);
                     }
                     ddd.currentView = 'about';
                     break;
                 case 'login':
-                    console.log('LOGIN screen!!!!!!!!!!!!');
                     var view = $('#view-login');
                     if (!isWideScreen) {
                         if (!currentView) {
                             hideAllViews();
-                            view.removeClass('hidden');
+                            view.classList.remove('hidden');
                         } else if (currentView !== 'login') {
                             flip({ in : view,
                                 out: $('#view-' + currentView),
@@ -178,10 +176,10 @@ dddns['ddd-plat'] = function(w) {
                         }
                     } else {
                         hideAllViews();
-                        $('#overlay').addClass('hide');
-                        view.removeClass('hidden');
-                        $('#view-home').removeClass('hidden');
-                        $('#view-comments').removeClass('hidden');
+                        $('#overlay').classList.add('hide');
+                        view.classList.remove('hidden');
+                        $('#view-home').classList.remove('hidden');
+                        $('#view-comments').classList.remove('hidden');
                     }
                     ddd.currentView = 'login';
                     break;
@@ -190,11 +188,11 @@ dddns['ddd-plat'] = function(w) {
                     if (!isWideScreen) {
                         if (!currentView) {
                             hideAllViews();
-                            view.removeClass('hidden');
+                            view.classList.remove('hidden');
                         } else if (currentView != 'feed') {
                             // Scroll to top first then slide, prevent Flash of Unscrolled View (FOUV)
                             var id = matches[1];
-                            if (id && ddd.feeds.currentID != id) view.find('section').scrollTop = 0;
+                            if (id && ddd.feeds.currentID != id) view.querySelectorAll('section').scrollTop = 0;
                             slide({ in : view,
                                 out: $('#view-' + currentView),
                                 direction: 'rtl'
@@ -202,11 +200,12 @@ dddns['ddd-plat'] = function(w) {
                         }
                     } else {
                         hideAllViews();
-                        $('#overlay').addClass('hide');
-                        view.removeClass('hidden');
-                        $('#view-home').removeClass('hidden');
+                        $('#overlay').classList.add('hide');
+                        view.classList.remove('hidden');
+                        $('#view-home').classList.remove('hidden');
                         ddd.pub('selectCurrentStory', matches[1]);
-                        view.find('header a.header-back-button').css('display', '');
+                        var button = view.querySelectorAll('header a.header-back-button');
+                        if(button.length > 0) button[0].style.display = 'none';
                     }
                     ddd.currentView = 'feed';
                     break;
@@ -215,11 +214,11 @@ dddns['ddd-plat'] = function(w) {
                     if (!isWideScreen) {
                         if (!currentView) {
                             hideAllViews();
-                            view.removeClass('hidden');
+                            view.classList.remove('hidden');
                         } else if (currentView != 'article') {
                             // Scroll to top first then slide, prevent Flash of Unscrolled View (FOUV)
                             var id = matches[1];
-                            if (id && ddd.feeds.currentID != id) view.find('section').scrollTop = 0;
+                            if (id && ddd.feeds.currentID != id) view.querySelectorAll('section').scrollTop = 0;
                             slide({ in : view,
                                 out: $('#view-' + currentView),
                                 direction: 'rtl'
@@ -227,11 +226,12 @@ dddns['ddd-plat'] = function(w) {
                         }
                     } else {
                         hideAllViews();
-                        $('#overlay').addClass('hide');
-                        view.removeClass('hidden');
-                        $('#view-home').removeClass('hidden');
+                        $('#overlay').classList.add('hide');
+                        view.classList.remove('hidden');
+                        $('#view-home').classList.remove('hidden');
                         ddd.pub('selectCurrentStory', matches[1]);
-                        view.find('header a.header-back-button').css('display', '');
+                        var button = view.querySelectorAll('header a.header-back-button');
+                        if(button.length > 0) button[0].style.display = 'none';
                     }
                     ddd.currentView = 'article';
                     break;
@@ -364,7 +364,7 @@ dddns['ddd-plat'] = function(w) {
                 if (ul) {
                     ul = ul.parentNode;
                     listTappedDelay = setTimeout(function() {
-                        if (ul) $(ul).addClass('list-tapped');
+                        if (ul) ul.classList.add('list-tapped');
                     }, 100);
                 }
             }
@@ -378,7 +378,7 @@ dddns['ddd-plat'] = function(w) {
             clearTimeout(listTappedDelay);
             var ul = target.parentNode.parentNode;
             setTimeout(function() {
-                if (ul) $(ul).removeClass('list-tapped');
+                if (ul) ul.classList.remove('list-tapped');
             }, 100);
         },
         onTap: function(e, target) {
@@ -421,20 +421,18 @@ dddns['ddd-plat'] = function(w) {
     //tappable('#view-comments .load-error button', ddd.comments.reload);
 
     ddd.sub('selectCurrentStory', function(id) {
-        console.log('on selectCurrentStory ' + id + ' widescreen=' + isWideScreen);
         if (!isWideScreen) return;
         if (!id) id = (location.hash.match(/feed\/(\d+)/) || [, ''])[1];
         var homeView = $('#view-home');
-        var selectedLinks = homeView.find('a[href].selected');
+        var selectedLinks = homeView.querySelectorAll('a[href].selected');
         for (var i = 0, l = selectedLinks.length; i < l; i++) {
-            $(selectedLinks[i]).removeClass('selected');
+            selectedLinks[i].classList.remove('selected');
         }
         // If there's no ID, still clear the selected link
         if (!id) return;
-        var link = homeView.find('a[href*="feed/' + id + '"]');
-        console.log('link is', link);
+        var link = homeView.querySelectorAll('a[href*="feed/' + id + '"]');
         if (link.length > 0) {
-            $(link).addClass('selected');
+            link[0].classList.add('selected');
             setTimeout(function() {
                 link[0].scrollIntoViewIfNeeded ? link[0].scrollIntoViewIfNeeded() : link[0].scrollIntoView();
             }, 1);
@@ -461,7 +459,7 @@ dddns['ddd-plat'] = function(w) {
         var postContentSection = viewSection.querySelector('.post-content');
         var commentsSection = viewSection.querySelector('.comments');
         if (!commentsSection) return;
-        var minHeight = viewSection.offsetHeight - postContentSection.offsetHeight + 1;
+        var minHeight = viewSection.removeEventListenersetHeight - postContentSection.removeEventListenersetHeight + 1;
         var style = $('#comment-section-style');
         if (!style) {
             style = d.createElement('style');
@@ -479,7 +477,7 @@ dddns['ddd-plat'] = function(w) {
     // Some useful tips from http://24ways.org/2011/raising-the-bar-on-mobile
     var supportOrientation = typeof w.orientation != 'undefined',
         getScrollTop = function() {
-            return w.pageYOffset || d.compatMode === 'CSS1Compat' && d.documentElement.scrollTop || body.scrollTop || 0;
+            return w.page.removeEventListenerset || d.compatMode === 'CSS1Compat' && d.documentElement.scrollTop || body.scrollTop || 0;
         },
         scrollTop = function() {
             if (!supportOrientation) return;
@@ -500,14 +498,14 @@ dddns['ddd-plat'] = function(w) {
         setTimeout(function() {
             var loader = $('#apploader');
             if (!loader) return;
-            loader.addClass('hide');
+            loader.classList.add('hide');
             loader.on('webkitTransitionEnd', function() {
-                loader.remove();
+                loader.parentNode.removeChild(loader);
             }, false);
         }, 200);
     } else {
         var loader = $('#apploader');
-        loader.remove();
+        loader.parentNode.removeChild(loader);
     }
 
     //ddd.news.options.disclosure = !isWideScreen;

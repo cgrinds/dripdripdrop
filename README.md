@@ -49,6 +49,7 @@ Current Features
 - add / remove new feeds
 - [vimium style](http://gstaff.org/dripdripdrop/screenshots/links.png) link navigation
 - special feeds, disabled by default. enable in settings
+- star articles
 
 Technical Stuff
 ---------------
@@ -61,7 +62,7 @@ DripDripDrop is using:
 - [Hogan.js](https://github.com/twitter/hogan.js) - logic-less templating
 - [Amplify.Store](http://amplifyjs.com/api/store/) - client-side storage
 - ruto.js - `location.hash` router
-- [zepto.js](http://zeptojs.com/) - a minimalist JavaScript library for modern browsers with a largely jQuery-compatible API.
+- [min.js](https://github.com/remy/min.js) - a tiny library for modern browsers
 - [Vimium](https://github.com/philc/vimium) - for link highlighting
 - iOS
 	- [Tappable](https://github.com/cheeaun/tappable) - touch-friendly tap events

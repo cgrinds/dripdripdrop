@@ -39,7 +39,7 @@ dddns['ddd'] = function(w) {
         hideAllViews: function() {
             var views = d.querySelectorAll('.view');
             for (var i = 0, l = views.length; i < l; i++) {
-                $(views[i]).addClass('hidden');
+                views[i].classList.add('hidden');
             }
         },
         tmpl: function(template, data) {
@@ -131,8 +131,8 @@ dddns['ddd'] = function(w) {
             console.log('<- ', response);
             if (response && !response.error) {
                 if (response.content) {
-                    var not_logged_in = response.content.error;
-                    if (not_logged_in === 'NOT_LOGGED_IN') {
+                    var loginError = 'error' in response.content;
+                    if (loginError) {
                         if (/login/i.test(location.href)) {
                             return error(response.content);
                         } else {
@@ -404,13 +404,18 @@ dddns['ddd'] = function(w) {
             });
         },
         moreFeeds: function(target) {
-            $(target).addClass('loading');
+            target.classList.add('loading');
 
             var showError = function() {
                 var tmpl1 = tmpl('feeds-load');
-                $(target).replaceWith(tmpl1.render({
-                    load_error: true
-                }));
+
+                var html = tmpl1.render({load_error: true}),
+                  ele = target,
+                  parent = ele.parentNode,
+                  tempDiv = document.createElement('div');
+
+                tempDiv.innerHTML = html;
+                parent.replaceChild(tempDiv.childNodes[0], ele);
                 ddd.pub('logAPIError', 'news');
             };
 
@@ -456,7 +461,7 @@ dddns['ddd'] = function(w) {
         },
 
         more: function(target) {
-            $(target).addClass('loading');
+            target.classList.add('loading');
             var feed_id = ddd.feeds.currentID;
             if (!feed_id) return;
             var unread_only = amplify.store('view-mode');
@@ -478,7 +483,7 @@ dddns['ddd'] = function(w) {
 
             ttrss.headlines(msg, function(_data) {
                 if (ddd.feeds.currentID != feed_id) return;
-                $(target).removeClass('loading');
+                target.classList.remove('loading');
                 var targetParent = target.parentNode;
                 if (!targetParent) return;
                 if (targetParent.parentNode) targetParent.parentNode.removeChild(targetParent);
@@ -490,8 +495,7 @@ dddns['ddd'] = function(w) {
                 html += data.length >= ddd.config.article_limit ?
                     '<li><a class="more-link">More&hellip;<span class="loader"></span></a></li>' : '' +
                     '</ul>';
-                $('#dddlist').append(html);
-                //$('dddlist').insertAdjacentHTML('beforeend', html);
+                $('#dddlist').insertAdjacentHTML('beforeend', html);
                 ddd.feeds.skip += ddd.config.article_limit;
             }, function(e) {});
         },
@@ -549,18 +553,17 @@ dddns['ddd'] = function(w) {
             var html = ddd.feeds.markupFeed(feed);
             ddd.pub('onDialogDone');
             if (cancel) {
-                $(liEle).replaceWith(html);
+                  var parent = liEle.parentNode,
+                    tempDiv = document.createElement('div');
+
+                  tempDiv.innerHTML = html;
+                  parent.replaceChild(tempDiv.childNodes[0], liEle);
                 return;
             }
             ddd.feeds.removeFeeds(false);
         },
 
         removeFeeds: function(cancel) {
-            if (cancel) {
-                $('#view-home h1').html('Feeds');
-                return;
-            }
-            //$('#view-home h1').html('Feeds');
             var feed = ddd.feeds.feedToDelete;
             if (!feed) return;
             var msg = {
@@ -577,10 +580,15 @@ dddns['ddd'] = function(w) {
                     // remove from cache and UI
                     ddd.feeds.removeFromStoreAndUi(feed);
                 }
-                $('.msg').attr('class', 'msg ' + claz).html(msg).show();
-                $('#view-home h1').html('Feeds');
+                var ele = $('.msg');
+                ['good', 'bad'].forEach(function(w){ele.classList.remove(w)});
+                ele.classList.add(claz);
+                ele.innerHTML = msg;
+                ele.style.display = 'block';
+                
+                $('#view-home h1').innerHTML = 'Feeds';
                 setTimeout(function() {
-                    $('.msg').hide();
+                    ele.style.display = 'none';
                 }, 3000);
             }, function(data) {
                 console.log('unsub err', data);
@@ -594,45 +602,26 @@ dddns['ddd'] = function(w) {
             var feed = ddd.getSelFeed();
             feed.i = feed.index + 1;
             ddd.feeds.feedToDelete = feed;
-            var linkEle = $(ele).find('a');
             var tmpl1 = tmpl('remove-feed-inline');
             var tmpl2 = tmpl('feed-partial');
             var html = tmpl1.render(feed, {
                 feed_partial: tmpl2
             });
-            $(ele).html(html);
+            ele.innerHTML = html;
             ddd.pub('onDialog');
-        },
-
-        removeFeed: function() {
-            // this only works in the feeds view
-            if (ddd.currentView !== 'home') return;
-            var sel = ddd.getSel();
-            var ele = $(sel.siz)[sel.sel];
-            var feed = ddd.getSelFeed();
-            ddd.feeds.feedToDelete = feed;
-            var tmpl1 = tmpl('remove-feed');
-            $('#view-home h1').html(tmpl1.render({
-                id: feed.id,
-                title: feed.title
-            }));
-            //var feedEle = '#' + ele.getAttribute('id') + ' a .feed';
-            //$('#' + ele.getAttribute('id') + ' a').removeAttr('href');
-            //$(tmpl1.render({})).appendTo(feedEle)
-            //$(tmpl1.render({title: feed.title})).appendTo('#' + ele.getAttribute('id') + ' a .feed')
         },
 
         addFeed: function() {
             var tmpl1 = tmpl('add-feed');
-            $('#view-home h1').html(tmpl1.render({}));
+            $('#view-home h1').innerHTML = tmpl1.render({});
         },
 
         addFeedClicked: function(cancel) {
             if (cancel) {
-                $('#view-home h1').html('Feeds');
+                $('#view-home h1').innerHTML = 'Feeds';
                 return;
             }
-            var txt = $('#add-feed').val();
+            var txt = $('#add-feed').value;
             if (txt.length === 0) return;
 
             msg = {
@@ -657,20 +646,25 @@ dddns['ddd'] = function(w) {
                     else if (code == 4) msg = "Invalid URL. " + err;
                     else if (code == 5) msg = "Invalid URL. " + err;
                 }
-                $('.msg').addClass(claz).html(msg).show();
+                var ele = $('.msg');
+                ['good', 'bad'].forEach(function(w){ele.classList.remove(w)});
+                ele.classList.add(claz);
+                ele.innerHTML = msg;
+                ele.style.display = 'block';
+
                 if (claz === 'good') {
-                    $('#view-home h1').html('Feeds');
+                    $('#view-home h1').innerHTML = 'Feeds';
                     setTimeout(function() {
-                        $('.msg').hide();
+                        ele.style.display = 'none';
                     }, 3000);
                 }
             }, function(e) {
                 console.log('in sub e is', e);
-                $('.msg').addClass('bad').html('Error adding feed ').show();
-                //$('#view-home h1').html('Feeds');
-                //setTimeout(function(){
-                //$('.msg').hide();
-                //}, 3000);
+                var ele = $('.msg');
+                ['good', 'bad'].forEach(function(w){ele.classList.remove(w)});
+                ele.classList.add('bad');
+                ele.innerHTML = 'Error adding feed ';
+                ele.style.display = 'block';
             });
         },
 
@@ -737,7 +731,7 @@ dddns['ddd'] = function(w) {
             amplify.store('feeds-by-id', map);
 
             var feedli = $('#feed-' + feed.id);
-            feedli.remove();
+            feedli.parentNode.removeChild(feedli);
         },
 
         cmd_toggleStar: function() {
@@ -770,7 +764,14 @@ dddns['ddd'] = function(w) {
                 if(article.unread && !article.marked)
                   ddd.feed.updateFeedAndLsRemove(feed, -1);
               } else {
-                $($(sel.siz)[sel.sel]).replaceWith(ddd.feeds.markupHeadline(article));
+                var html = ddd.feeds.markupHeadline(article),
+                  eles = $(sel.siz),
+                  tempDiv = document.createElement('div');
+
+                if(!eles.length) eles = [eles]; 
+                tempDiv.innerHTML = html;
+                var parent = eles[sel.sel].parentNode;
+                parent.replaceChild(tempDiv.childNodes[0], eles[sel.sel]);
               }
               ddd.feed.showSelection();
               return;
@@ -800,7 +801,14 @@ dddns['ddd'] = function(w) {
                   var newUnread = parseInt(newItem.unread, 10);
                   if(newUnread != feed.unread) {
                     feed.unread = newUnread;
-                    $('#feed-' + feed.id).replaceWith(ddd.feeds.markupFeed(feed));
+
+                  var html = ddd.feeds.markupFeed(feed),
+                    ele = $('#feed-' + feed.id),
+                    parent = ele.parentNode,
+                    tempDiv = document.createElement('div');
+
+                  tempDiv.innerHTML = html;
+                  parent.replaceChild(tempDiv.childNodes[0], ele);
                   }
               }
               amplify.store('feeds', data);
@@ -831,7 +839,9 @@ dddns['ddd'] = function(w) {
             if(article && article.marked) {
               html += ' <div class="meta">' + '<a class="header-button header-button-icon header-button-right" id="view-home-settings"><button><i class="icon-star">Star</i></button></a></div>';
             }
-            $(siz).html(html);
+            var ele = $(siz);
+            if(!ele.length) ele = [ele];
+            ele[0].innerHTML = html;
         },
 
         render: function(_id, _feed) {
@@ -859,9 +869,9 @@ dddns['ddd'] = function(w) {
             var unread_only = amplify.store('view-mode');
             loadingHeadlines = true;
             tmpl1 = tmpl('feeds-load');
-            $('#view-feed .scroll').html(tmpl1.render({
+            $('#view-feed .scroll').innerHTML = tmpl1.render({
                 loading: true
-            }));
+            });
 
             msg = {
                 op: "getHeadlines",
@@ -885,6 +895,7 @@ dddns['ddd'] = function(w) {
             var sel = ddd.getSel(view);
             if (sel === undefined) return;
             items = $(sel.siz);
+            if(!items.length) items = [items];
             if (sel.sel >= items.length) {
                 // for when you select the last itme
                 if (sel.sel >= items.length) {
@@ -892,7 +903,9 @@ dddns['ddd'] = function(w) {
                     if (sel.sel < 0) sel.sel = 0;
                 }
             }
-            $(items[sel.sel]).addClass('sel');
+            var item = items[sel.sel];
+            if(!item.classList) return;
+            item.classList.add('sel');
         },
 
         renderHeadlines: function(_data) {
@@ -911,7 +924,7 @@ dddns['ddd'] = function(w) {
                 if (!next) next = 0;
                 ddd.feeds.skip = next + ddd.config.article_limit;
             }
-            $('#view-feed .scroll').html(html);
+            $('#view-feed .scroll').innerHTML = html;
             ddd.pub('adjustCommentsSection');
             ddd.pub('onRenderComments');
         },
@@ -957,7 +970,7 @@ dddns['ddd'] = function(w) {
               ddd.feed.markFeedRead(feed);
               if(articleIndex > -1) {
                 ddd.feed.currentHeadlines = [];
-                $('#dddlist').empty();
+                $('#dddlist').innerHTML = '';
               }
               return;
             }
@@ -1009,7 +1022,12 @@ dddns['ddd'] = function(w) {
                 for (var i = 0, l = ddd.feed.currentHeadlines.length; i < l; i++) {
                     ddd.feed.currentHeadlines[i].unread = false;
                 }
-                $('#view-feed .unread').attr('class', 'read');
+                var unread = $('#view-feed .unread');
+                if(unread instanceof Node) unread = [unread];
+                
+                for (var i = 0, l = unread.length; i < l; i++) {
+                  unread[i].setAttribute('class', 'read');
+                }
                 ddd.feed.replaceFeedUI(feed);
             }
         },
@@ -1031,8 +1049,13 @@ dddns['ddd'] = function(w) {
 
         replaceFeedUI: function(feed) {
             feed.i = feed.index + 1;
-            var html = ddd.feeds.markupFeed(feed);
-            $('#feed-' + feed.id).replaceWith(html);
+            var html = ddd.feeds.markupFeed(feed),
+              ele = $('#feed-' + feed.id),
+              parent = ele.parentNode,
+              tempDiv = document.createElement('div');
+
+            tempDiv.innerHTML = html;
+            parent.replaceChild(tempDiv.childNodes[0], ele);
         },
 
         goHomeIfFeedIsEmpty: function() {
@@ -1059,21 +1082,21 @@ dddns['ddd'] = function(w) {
             }
             ruto.go('/login');
             var tmpl1 = tmpl('login');
-            $('#view-login .scroll').html(tmpl1.render({}));
+            $('#view-login .scroll').innerHTML = tmpl1.render({});
         },
         doLogin: function() {
-            var un = $('#username').val();
-            var pass = $('#password').val();
+            var un = $('#username').value;
+            var pass = $('#password').value;
             ttrss.login(un, pass, function(suc) {
                 // emptying the div was the only reliable way to not have the input eat the keyevents
-                $('#view-login .scroll').empty();
+                $('#view-login .scroll').style.display = 'none';
                 ruto.go('/');
                 ddd.pollRefresh();
                 $('#view-home .scroll').focus();
             }, function(fail) {
                 console.log('login failed', fail);
-                $(".login-error").html('Login failed');
-                $(".login-error").removeClass('hidden');
+                $(".login-error").innerHTML = 'Login failed';
+                $(".login-error").classList.remove('hidden');
             });
         }
     };
@@ -1106,7 +1129,7 @@ dddns['ddd'] = function(w) {
                 back = '#/feed/' + match[1];
               }
             }
-            $('#view-article .header-back-button').attr('href', back);
+            $('#view-article .header-back-button').setAttribute('href', back);
             
             var vars = {article: article};
             if(ddd.feeds.currentID < 0) {
@@ -1117,7 +1140,7 @@ dddns['ddd'] = function(w) {
             }
 
             var tmpl1 = tmpl('article');
-            $('#view-article .scroll').html(tmpl1.render(vars));
+            $('#view-article .scroll').innerHTML = tmpl1.render(vars);
         },
 
         cmd_next: function(dir) {
@@ -1199,11 +1222,13 @@ dddns['ddd'] = function(w) {
 
     ddd.settingsView = {
       render: function() {
-        var settings = ddd.settings;
+        var settings = ddd.settings,
+            showSpecial = $('input[name="ddd:config:show_special_folders"]');
 
-        $('input[name="ddd:config:show_special_folders"]').prop('checked', settings.show_special_folders);
+  
+        showSpecial['checked'] = settings.show_special_folders;
         $('#view-settings .save').on('click', function(){
-          settings.show_special_folders = $('input[name="ddd:config:show_special_folders"]').is(':checked');
+          settings.show_special_folders = showSpecial['checked'];
 
           amplify.store('settings', settings);
           ruto.go('/');
@@ -1260,20 +1285,21 @@ dddns['ddd'] = function(w) {
             return;
         }
         items = $(sel.siz);
-        if (!items) return;
+        if (!items.length) items = [items];
         if (sel.sel < 0 || sel.sel >= items.length) return;
-        var as = $(items[sel.sel]).find('a');
+        var as = items[sel.sel].querySelectorAll('a');
         if (!as || as.length === 0) return;
+        as = as[0];
         // when you enter feed A, scroll to the last headline, exit and then enter another feed 
         // reset the selection index
         if (ddd.currentView === 'home') {
-            var next = as[0].href;
+            var next = as.getAttribute('href');
             if (sel.cur != next) {
                 ddd.getSel('feed').sel = 0;
             }
             sel.cur = next;
         }
-        $(as[0]).click();
+        as.trigger('click');
     };
 
     ddd.cmd_goUp = function() {
@@ -1310,6 +1336,7 @@ dddns['ddd'] = function(w) {
         var feedsById = amplify.store('feeds-by-id');
         if (sel.name === 'feeds') {
             var selectors = $(sel.siz);
+            if(!selectors.length) selectors = [selectors];
             var one = selectors[sel.sel];
             if (!one) return; // can happen when there are no feeds
             // id="feed-xxxxx"
@@ -1334,7 +1361,7 @@ dddns['ddd'] = function(w) {
             articleA = $('#full_article');
             if (!articleA) return;
             //$(to_open).click();
-            to_open = articleA.attr('href');
+            to_open = articleA.getAttribute('href');
             //return;
         } else if (ddd.currentView === 'feed') {
             var sel = ddd.getSel();
@@ -1348,7 +1375,7 @@ dddns['ddd'] = function(w) {
             }
         }
         if (!to_open) return;
-        opener.attr('href', to_open);
+        opener.setAttribute('href', to_open);
         //console.log('to_open=', to_open);
         if($.browser.firefox) {
           opener.click();
@@ -1362,7 +1389,7 @@ dddns['ddd'] = function(w) {
           } else {
               evt.initMouseEvent("click", true, true, window, 1, 0, 0, 0, 0, true, false, false, false, 0, null);
           }
-          opener[0].dispatchEvent(evt);
+          opener.dispatchEvent(evt);
         }
 
         var unread_only = amplify.store('view-mode');
@@ -1409,14 +1436,15 @@ dddns['ddd'] = function(w) {
         }
         //items = $('dddlist').querySelectorAll('li');
         var items = $(sel.siz);
+        if(!items.length) items = [items];
 
         if (sel.sel >= items.length) {
             sel.sel = items.length - 1;
             return;
         }
         if (items.length === 0 || sel.sel >= items.length) return;
-        $(items[sel.sel - dir]).removeClass('sel');
-        $(items[sel.sel]).addClass('sel');
+        items[sel.sel - dir].classList.remove('sel');
+        items[sel.sel].classList.add('sel');
 
         //var scrollTop = document.body.scrollTop;
         var elem = items[sel.sel];
@@ -1426,7 +1454,7 @@ dddns['ddd'] = function(w) {
         if (isVisible) return;
         var offsetHeight = elem.offsetHeight;
         //console.log('offsetHeight=', offsetHeight);
-        var toScroll = $.browser.chrome ? document.body : $('html')[0];
+        var toScroll = $.browser.chrome ? document.body : $('html');
         if (dir < 0) {
             toScroll.scrollTop = elemTop - (offsetHeight - 5);
         } else {
@@ -1438,7 +1466,7 @@ dddns['ddd'] = function(w) {
     };
 
     function isScrolledIntoView(elem) {
-        var toScroll = $.browser.chrome ? document.body : $('html')[0];
+        var toScroll = $.browser.chrome ? document.body : $('html');
         var docViewTop = toScroll.scrollTop;
         // this may not work everywhere
         // http://stackoverflow.com/questions/1823691/html-dom-width-height-of-visible-window
@@ -1464,7 +1492,7 @@ dddns['ddd'] = function(w) {
         before: function(path, name) {
             ddd.hideAllViews();
             var view = $('#view-' + name);
-            $(view).removeClass('hidden');
+            view.classList.remove('hidden');
             ddd.prevHref = this.previous;
             ddd.currentView = name;
         },

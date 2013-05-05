@@ -28,7 +28,7 @@ dddns['ddd-plat'] = function(w) {
     var head = d.head || d.getElementsByTagName('head')[0];
     var adjustViewsHeight = function() {
         var vh = window.innerHeight;
-        var style = $('view-height');
+        var style = $('#view-height');
         if (!style) {
             style = d.createElement('style');
             style.id = 'view-height';
@@ -37,18 +37,6 @@ dddns['ddd-plat'] = function(w) {
         style.textContent = '.view>.scroll{min-height: ' + (vh * 0.85) + 'px}';
     };
 
-    //var rewriteLinks = function(e) {
-    //console.log('click on ', e);
-    //if(!e) return;
-    //var onArticle = /article/.test(window.location.href);
-    //if(!onArticle) return;
-    //var ele = e.target || e.srcElement;
-    //if(ele.tagName == 'A') {
-    //ele.setAttribute('target', '_blank');
-    //}
-    //};
-    //w.addEventListener('click', rewriteLinks, false);
-
     w.addEventListener('resize', adjustViewsHeight, false);
     w.addEventListener('orientationchange', adjustViewsHeight, false);
     adjustViewsHeight();
@@ -56,42 +44,41 @@ dddns['ddd-plat'] = function(w) {
     $('#view-home-settings').on('click', function() {
         ddd.feeds.settings();
     });
-    $('#view-home .more-link').on('click', function() {
-        ddd.feeds.moreFeeds(target);
-    });
-    $('#view-feed').on('click', '.more-link', function(e) {
+    //$('#view-home .more-link').on('click', function() {
+        //ddd.feeds.moreFeeds(target);
+    //});
+    $('#view-feed').on('click', function(e) {
+        if(!e.target.classList.contains('more-link')) return;
         ddd.feeds.more(e.target);
     });
-    $('#view-home').on('click', 'li', function(e) {
+    $('#view-home').on('click', function(e) {
+        if(e.target.localName !== 'li') return;
         ddd.cmd_click_feed(e.target);
     });
-    $('body').on('keydown', '#add-feed', function(e) {
-        //console.log(e.keyCode, e);
+    $('body').on('keydown', function(e) {
+        if(e.target.getAttribute('id') !== 'add-feed') return;
         if (e.keyCode === 13)
             ddd.feeds.addFeedClicked();
         if (e.keyCode === 27)
             ddd.feeds.addFeedClicked(true);
     });
-    $('#view-login').on('keydown', 'input', function(e) {
+    $('#view-login').on('keydown', function(e) {
+        if(e.target.localName !== 'input') return;
         if (e.keyCode === 13)
             ddd.login.doLogin();
     });
-    $('#view-login').on('click', '#login', function() {
+    $('#view-login').on('click', function(e) {
+      if(e.target.getAttribute('id') !== 'login') return;
       ddd.login.doLogin();
     });
-    $('#view-home').on('click', '.question .delete', function() {
+    $('#view-home').on('click', function(e) {
+        if(!e.target.classList.contains('delete')) return;
         ddd.feeds.removeFeedsInline(false);
     });
-    $('#view-home').on('click', '.question .cancel', function() {
+    $('#view-home').on('click', function(e) {
+        if(!e.target.classList.contains('cancel')) return;
         ddd.feeds.removeFeedsInline(true);
     });
-
-    //ibento('#view-home .delete', 'click', function(e, target) {
-    //ddd.feeds.removeFeeds(false);
-    //});
-    //ibento('#view-home .cancel', 'click', function(e, target) {
-    //ddd.feeds.removeFeeds(true);
-    //});
 
     var addKeyboardShortcuts = function() {
         Mousetrap.bind('j', function() {
@@ -607,12 +594,11 @@ root.HandlerStack = (function() {
       }
     },
     shouldCreateMarker: function(ele) {
-      var $e = $(ele);
-      if ($e.hasClass('header-button')) return false;
+      if (ele.classList.contains('header-button')) return false;
       if (ele.localName === 'button') {
-        if($(ele.parentElement).hasClass('header-button')) return false;
+        if(ele.parentElement.classList.contains('header-button')) return false;
       }
-      if($e.attr('id') === 'full_article') return false;
+      if(ele.getAttribute('id') === 'full_article') return false;
       return true;
     },
 
@@ -680,21 +666,21 @@ root.HandlerStack = (function() {
       if (this.delayMode) {
         return;
       }
-      if (event.keyCode === keyCodes.shiftKey && this.mode !== COPY_LINK_URL) {
-        prev_mode = this.mode;
-        this.setOpenLinkMode(OPEN_IN_NEW_TAB);
-        handlerStack.push({
-          keyup: function(event) {
-            if (event.keyCode !== keyCodes.shiftKey) {
-              return;
-            }
-            if (_this.isActive) {
-              _this.setOpenLinkMode(prev_mode);
-            }
-            return _this.remove();
-          }
-        });
-      }
+      //if (event.keyCode === keyCodes.shiftKey && this.mode !== COPY_LINK_URL) {
+        //prev_mode = this.mode;
+        //this.setOpenLinkMode(OPEN_IN_NEW_TAB);
+        //handlerStack.push({
+          //keyup: function(event) {
+            //if (event.keyCode !== keyCodes.shiftKey) {
+              //return;
+            //}
+            //if (_this.isActive) {
+              //_this.setOpenLinkMode(prev_mode);
+            //}
+            //return _this.remove();
+          //}
+        //});
+      //}
       if (KeyboardUtils.isEscape(event)) {
         this.deactivateMode();
       } else if (event.keyCode !== keyCodes.shiftKey) {

@@ -1067,6 +1067,7 @@ dddns.ddd = function(w) {
         parent = ele.parentNode,
         tempDiv = document.createElement('div');
 
+      if (!parent) return;
       tempDiv.innerHTML = html;
       parent.replaceChild(tempDiv.childNodes[0], ele);
     },

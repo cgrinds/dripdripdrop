@@ -1,32 +1,32 @@
 /*globals Element:true, NodeList:true*/
-$ = (function (document, ua, $) {
+$ = (function(document, ua, $) {
   var element = Element.prototype,
-      nodeList = NodeList.prototype,
-      forEach = 'forEach',
-      trigger = 'trigger',
-      each = [][forEach],
-      dummy = document.createElement('div'), // Firefox requires a valid tag
-      specialEvents = {};
+    nodeList = NodeList.prototype,
+    forEach = 'forEach',
+    trigger = 'trigger',
+    each = [][forEach],
+    dummy = document.createElement('div'), // Firefox requires a valid tag
+    specialEvents = {};
 
   specialEvents.click = specialEvents.mousedown = specialEvents.mouseup = specialEvents.mousemove = 'MouseEvents';
 
   nodeList[forEach] = each;
 
-  element.on = function (event, fn) {
+  element.on = function(event, fn) {
     this.addEventListener(event, fn, false);
     return this;
   };
 
-  nodeList.on = function (event, fn) {
-    each.call(this, function (el) {
+  nodeList.on = function(event, fn) {
+    each.call(this, function(el) {
       el.on(event, fn);
     });
     return this;
   };
-  
-  element.trigger = function (type, data) {
+
+  element.trigger = function(type, data) {
     var event = document.createEvent(specialEvents[type] || 'Events'),
-        bubbles = true;
+      bubbles = true;
     event.initEvent(type, true, true);
     event.data = data || {};
     event.eventName = type;
@@ -35,23 +35,23 @@ $ = (function (document, ua, $) {
     return this;
   };
 
-  nodeList.trigger = function (event) {
-    each.call(this, function (el) {
+  nodeList.trigger = function(event) {
+    each.call(this, function(el) {
       el[trigger](event);
     });
     return this;
   };
 
-  $ = function (s) {
+  $ = function(s) {
     //console.log('$ for ',s);
     var r = document.querySelectorAll(s || '☺'),
-        length = r.length;
+      length = r.length;
     return length == 1 ? r[0] : !length ? [] : r;
   };
 
-  $all = function (s) {
+  $all = function(s) {
     var r = document.querySelectorAll(s || '☺'),
-        length = r.length;
+      length = r.length;
     return !length ? [] : r;
   }
 
@@ -60,16 +60,16 @@ $ = (function (document, ua, $) {
 
   $.ajax = function(args) {
     var xhr = new XMLHttpRequest(),
-        type = args.type,
-        url = args.url,
-        success = args.success,
-        opts = {},
-        error = args.error,
-        fd;
+      type = args.type,
+      url = args.url,
+      success = args.success,
+      opts = {},
+      error = args.error,
+      fd;
 
     //if (typeof opts === 'function') {
-      //callback = opts;
-      //opts = null;
+    //callback = opts;
+    //opts = null;
     //}
 
     xhr.open(type, url);
@@ -78,11 +78,11 @@ $ = (function (document, ua, $) {
       xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
       //fd = new FormData();
       //for (var key in opts) {
-        //fd.append(key, JSON.stringify(opts[key]));
+      //fd.append(key, JSON.stringify(opts[key]));
       //}
     }
 
-    xhr.onload = function () {
+    xhr.onload = function() {
       success(JSON.parse(xhr.response));
     };
     xhr.onerror = xhr.onabort = xhr.ontimeout = function(e) {
@@ -93,7 +93,7 @@ $ = (function (document, ua, $) {
     xhr.send(args.data ? args.data : null);
   };
 
-  function detect(ua){
+  function detect(ua) {
     var os = this.os = {}, browser = this.browser = {},
       //webkit = ua.match(/WebKit\/([\d.]+)/),
       //android = ua.match(/(Android)\s+([\d.]+)/),
@@ -108,7 +108,7 @@ $ = (function (document, ua, $) {
       //rimtabletos = ua.match(/(RIM\sTablet\sOS)\s([\d.]+)/),
       //playbook = ua.match(/PlayBook/),
       chrome = ua.match(/Chrome\/([\d.]+)/) || ua.match(/CriOS\/([\d.]+)/);
-      //firefox = ua.match(/Firefox\/([\d.]+)/);
+    //firefox = ua.match(/Firefox\/([\d.]+)/);
 
     //if (browser.webkit = !!webkit) browser.version = webkit[1]
 

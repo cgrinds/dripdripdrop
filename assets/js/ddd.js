@@ -1,5 +1,5 @@
 dddns = typeof dddns === 'undefined' ? {} : dddns;
-dddns['ddd'] = function(w) {
+dddns.ddd = function(w) {
     var d = w.document,
         body = d.body;
 
@@ -581,7 +581,7 @@ dddns['ddd'] = function(w) {
                     ddd.feeds.removeFromStoreAndUi(feed);
                 }
                 var ele = $('.msg');
-                ['good', 'bad'].forEach(function(w){ele.classList.remove(w)});
+                ['good', 'bad'].forEach(function(w){ele.classList.remove(w);});
                 ele.classList.add(claz);
                 ele.innerHTML = msg;
                 ele.style.display = 'block';
@@ -647,7 +647,7 @@ dddns['ddd'] = function(w) {
                     else if (code == 5) msg = "Invalid URL. " + err;
                 }
                 var ele = $('.msg');
-                ['good', 'bad'].forEach(function(w){ele.classList.remove(w)});
+                ['good', 'bad'].forEach(function(w){ele.classList.remove(w);});
                 ele.classList.add(claz);
                 ele.innerHTML = msg;
                 ele.style.display = 'block';
@@ -661,7 +661,7 @@ dddns['ddd'] = function(w) {
             }, function(e) {
                 console.log('in sub e is', e);
                 var ele = $('.msg');
-                ['good', 'bad'].forEach(function(w){ele.classList.remove(w)});
+                ['good', 'bad'].forEach(function(w){ele.classList.remove(w);});
                 ele.classList.add('bad');
                 ele.innerHTML = 'Error adding feed ';
                 ele.style.display = 'block';
@@ -731,6 +731,7 @@ dddns['ddd'] = function(w) {
             amplify.store('feeds-by-id', map);
 
             var feedli = $('#feed-' + feed.id);
+            if(feedli.length === 0) return;
             feedli.parentNode.removeChild(feedli);
         },
 
@@ -864,7 +865,7 @@ dddns['ddd'] = function(w) {
                 feed = amplify.store('feeds-by-id')[id];
             }
             if (feed)
-                ddd.feed.renderTitle(feed, '#view-feed h1')
+                ddd.feed.renderTitle(feed, '#view-feed h1');
 
             var unread_only = amplify.store('view-mode');
             loadingHeadlines = true;
@@ -1025,7 +1026,7 @@ dddns['ddd'] = function(w) {
                 var unread = $('#view-feed .unread');
                 if(unread instanceof Node) unread = [unread];
                 
-                for (var i = 0, l = unread.length; i < l; i++) {
+                for (i = 0, l = unread.length; i < l; i++) {
                   unread[i].setAttribute('class', 'read');
                 }
                 ddd.feed.replaceFeedUI(feed);
@@ -1115,7 +1116,7 @@ dddns['ddd'] = function(w) {
             ddd.article.currentArticle = article;
             var feedsByMap = amplify.store('feeds-by-id');
             var feed = feedsByMap[ddd.feeds.currentID];
-            ddd.feed.renderTitle(feed, '#view-article h1', article)
+            ddd.feed.renderTitle(feed, '#view-article h1', article);
             ddd.feed.markArticleRead(article, index);
 
             article.hasContent = true;
@@ -1145,8 +1146,9 @@ dddns['ddd'] = function(w) {
 
         cmd_next: function(dir) {
             if (ddd.currentView !== 'article') return;
-            var sel = ddd.getSel('feed');
-            var unread_only = amplify.store('view-mode');
+            var sel = ddd.getSel('feed'),
+              unread_only = amplify.store('view-mode'),
+              items, as, link;
             if(dir == 1) {
                 // the article we're looking at has already been removed from currentHeadlines
                 // so its size has decreased by 1
@@ -1154,11 +1156,11 @@ dddns['ddd'] = function(w) {
                   sel.sel++;
                 }
                 var next_sel = sel.sel;
-                var items = $(sel.siz);
+                items = $(sel.siz);
                 if(next_sel >= items.length) return;
-                var as = $(items[next_sel]).find('a');
+                as = $(items[next_sel]).find('a');
                 if (!as || as.length === 0) return;
-                var link = $(as[0]);
+                link = $(as[0]);
                 if(link.hasClass('more-link')) {
                   // click this link per normal but reset the sel since the more link replaces itself
                   // if you don't you'll skip the next article
@@ -1176,11 +1178,11 @@ dddns['ddd'] = function(w) {
               if(!unread_only) {
               }
               var prev_sel = sel.sel;
-              var items = $(sel.siz);
+              items = $(sel.siz);
               if(prev_sel < 0) return;
-              var as = $(items[prev_sel]).find('a');
+              as = $(items[prev_sel]).find('a');
               if (!as || as.length === 0) return;
-              var link = $(as[0]);
+              link = $(as[0]);
               if(link.hasClass('more-link')) {
                 // click this link per normal but reset the sel since the more link replaces itself
                 // if you don't you'll skip the next article
@@ -1211,7 +1213,7 @@ dddns['ddd'] = function(w) {
 
             var feedsByMap = amplify.store('feeds-by-id');
             var feed = feedsByMap[ddd.feeds.currentID];
-            ddd.feed.updateFeedAndLsAdd(feed, article, ddd.feeds.currentID)
+            ddd.feed.updateFeedAndLsAdd(feed, article, ddd.feeds.currentID);
           
             if(ddd.feeds.currentID < 0) {
               feed = feedsByMap[article.feed_id];
@@ -1226,9 +1228,9 @@ dddns['ddd'] = function(w) {
             showSpecial = $('input[name="ddd:config:show_special_folders"]');
 
   
-        showSpecial['checked'] = settings.show_special_folders;
+        showSpecial.checked = settings.show_special_folders;
         $('#view-settings .save').on('click', function(){
-          settings.show_special_folders = showSpecial['checked'];
+          settings.show_special_folders = showSpecial.checked;
 
           amplify.store('settings', settings);
           ruto.go('/');
@@ -1317,7 +1319,7 @@ dddns['ddd'] = function(w) {
               ruto.go('/feed/' + ddd.feeds.currentID);
             return;
         }
-        ruto.go('/')
+        ruto.go('/');
     };
 
     ddd.getSel = function(view) {
@@ -1523,17 +1525,17 @@ dddns['ddd'] = function(w) {
     });
 };
 //XXX TEMPLATES HERE
-if (!dddns['poll']) {
+if (!dddns.poll) {
     var poll = function() {
-        if (dddns['ddd-plat'] && dddns['ddd'] && dddns['lib']) {
+        if (dddns.dddPlat && dddns.ddd && dddns.lib) {
             console.log('everything is loaded');
-            dddns['ddd'](window);
-            dddns['ddd-plat'](window);
-            dddns['poll'] = 1;
+            dddns.ddd(window);
+            dddns.dddPlat(window);
+            dddns.poll = 1;
         } else {
-            setTimeout(dddns['poll'], 75);
+            setTimeout(dddns.poll, 75);
         }
     };
-    dddns['poll'] = poll;
+    dddns.poll = poll;
     setTimeout(poll, 75);
 }

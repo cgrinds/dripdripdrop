@@ -7,6 +7,7 @@ module.exports = function(grunt) {
   ];
   var andWeb = [
     'assets/js/libs/mousetrap.js',
+    'assets/js/libs/vimium.js',
     'assets/js/footer_poll.js',
   ];
   var andIos = [
@@ -113,8 +114,11 @@ module.exports = function(grunt) {
 			}
 		},
 		jshint: {
+      options: {
+        es5: true,
+      },
 			all: [
-				'assets/js/*.js'
+        'assets/js/*.js'
 			]
 		},
 

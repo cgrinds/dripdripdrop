@@ -1,5 +1,5 @@
 dddns = typeof dddns === 'undefined' ? {} : dddns;
-dddns['ddd-plat'] = function(w) {
+dddns.dddPlat = function(w) {
     console.log('dddd');
     var d = w.document,
         body = d.body,
@@ -512,18 +512,18 @@ dddns['ddd-plat'] = function(w) {
     ddd.init();
     ddd.feeds.render();
 };
-if (!dddns['poll']) {
+if (!dddns.poll) {
     var poll = function() {
-        if (dddns['ddd-plat'] && dddns['ddd'] && dddns['lib']) {
+        if (dddns.dddPlat && dddns.ddd && dddns.lib) {
             // everything is loaded
             console.log('everything is loaded');
-            dddns['ddd'](window);
-            dddns['ddd-plat'](window);
-            dddns['poll'] = 1;
+            dddns.ddd(window);
+            dddns.dddPlat(window);
+            dddns.poll = 1;
         } else {
-            setTimeout(dddns['poll'], 75);
+            setTimeout(dddns.poll, 75);
         }
     };
-    dddns['poll'] = poll;
+    dddns.poll = poll;
     setTimeout(poll, 75);
 }

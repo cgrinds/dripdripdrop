@@ -1,2 +1,2 @@
 dddns = typeof dddns === 'undefined' ? {} : dddns;
-dddns['lib'] = 1;
+dddns.lib = 1;

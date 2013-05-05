@@ -118,10 +118,10 @@ $ = (function (document, ua, $) {
     //if (kindle) os.kindle = true, os.version = kindle[1]
     //if (silk) browser.silk = true, browser.version = silk[1]
     //if (!silk && os.android && ua.match(/Kindle Fire/)) browser.silk = true
-    if (chrome) browser.chrome = true, browser.version = chrome[1]
+    if (chrome) browser.chrome = true, browser.version = chrome[1];
     //if (firefox) browser.firefox = true, browser.version = firefox[1]
   }
-  detect.call($, ua)
+  detect.call($, ua);
 
   return $;
 })(document, navigator.userAgent);

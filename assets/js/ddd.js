@@ -1156,12 +1156,12 @@ dddns.ddd = function(w) {
                   sel.sel++;
                 }
                 var next_sel = sel.sel;
-                items = $(sel.siz);
+                items = $all(sel.siz);
                 if(next_sel >= items.length) return;
-                as = $(items[next_sel]).find('a');
+                as = items[next_sel].querySelectorAll('a');
                 if (!as || as.length === 0) return;
-                link = $(as[0]);
-                if(link.hasClass('more-link')) {
+                link = as[0];
+                if(link.classList.contains('more-link')) {
                   // click this link per normal but reset the sel since the more link replaces itself
                   // if you don't you'll skip the next article
                   if(!unread_only) {
@@ -1178,12 +1178,12 @@ dddns.ddd = function(w) {
               if(!unread_only) {
               }
               var prev_sel = sel.sel;
-              items = $(sel.siz);
+              items = $all(sel.siz);
               if(prev_sel < 0) return;
-              as = $(items[prev_sel]).find('a');
+              as = items[prev_sel].querySelectorAll('a');
               if (!as || as.length === 0) return;
-              link = $(as[0]);
-              if(link.hasClass('more-link')) {
+              link = as[0];
+              if(link.classList.contains('more-link')) {
                 // click this link per normal but reset the sel since the more link replaces itself
                 // if you don't you'll skip the next article
                 if(!unread_only) {

@@ -49,6 +49,12 @@ $ = (function (document, ua, $) {
     return length == 1 ? r[0] : !length ? [] : r;
   };
 
+  $all = function (s) {
+    var r = document.querySelectorAll(s || '☺'),
+        length = r.length;
+    return !length ? [] : r;
+  }
+
   $.on = element.on.bind(dummy);
   $.trigger = element[trigger].bind(dummy);
 

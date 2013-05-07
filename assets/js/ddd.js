@@ -225,9 +225,8 @@ dddns.ddd = function(w) {
   var $homeScroll = d.querySelector('#view-home .scroll'),
     $homeScrollSection = $homeScroll.querySelector('section'),
     loadingFeeds = false,
-    loadingHeadlines = false;
-
-  var selections = {};
+    loadingHeadlines = false,
+    selections = {};
 
   ddd.feeds = {
     skip: 0,
@@ -249,21 +248,20 @@ dddns.ddd = function(w) {
     },
 
     markupFeed: function(feed) {
+      var tmpl1 = tmpl('feeds'),
+        tmpl2 = tmpl('feed-partial'),
+        hasIcon = feed.has_icon && ddd.config.iconPath,
+        vars = {feed: feed}, 
+        html;
+
       feed.type = feed.unread > 0 ? "unread" : "read";
       if (feed.title === "") feed.title = "&nbsp;";
       if (feed.id < 0) {
         feed.urlid = ddd.feeds.specialIdToName[-feed.id];
       }
-      var tmpl1 = tmpl('feeds');
-      var tmpl2 = tmpl('feed-partial');
-
-      var hasIcon = feed.has_icon && ddd.config.iconPath;
-      var vars = {
-        feed: feed
-      };
       if (hasIcon) vars.icon = ddd.config.iconPath;
 
-      var html = tmpl1.render(vars, {
+      html = tmpl1.render(vars, {
         feed_partial: tmpl2
       });
       return html;

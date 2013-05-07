@@ -1101,7 +1101,7 @@ dddns.ddd = function(w) {
       var pass = $('#password').value;
       ttrss.login(un, pass, function(suc) {
         // emptying the div was the only reliable way to not have the input eat the keyevents
-        $('#view-login .scroll').style.display = 'none';
+        $('#view-login .scroll').innerHTML = '';
         ruto.go('/');
         ddd.pollRefresh();
         $('#view-home .scroll').focus();

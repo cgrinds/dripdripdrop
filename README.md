@@ -22,13 +22,15 @@ You will need *Tiny Tiny RSS* installed on a machine, let's call that machine **
 
 1. Grab the latest [release](https://github.com/cgrinds/dripdripdrop/tree/master/dist).
 
-2. Untar the release on **ttrss-server** (for example tar xvf ddd-0.4.2.tgz). 
+2. Untar the release on **ttrss-server** (for example tar xvf ddd-0.5.0.tgz). 
 If you have CORs enabled on your server - ddd will work fine. That's how I develop, 
-the laptop talks to ttrss server on a different machine.
+the laptop talks to a ttrss server on a different machine.
 
 3. Copy `ddd/assets/js/config-dist.js` to `ddd/assets/js/config.js`.
 
-4. Edit the `config.js` and update the `api` to point to your **ttrss-server**'s API end-point. This is usually something like `/tt-rss/`.
+4. Edit the `config.js` and update the `api` to point to your **ttrss-server**'s API end-point. This is usually something like `/tt-rss/`. For example if you get to ttrss by surfing to http://example.com/path/to/tt-rss. You should change the `api` to `/path/to/tt-rss` 
+
+Take a look at [troubleshooting](https://github.com/cgrinds/dripdripdrop/wiki/Troubleshooting) if you have problems.
 
 5. Enable API access for each user that plans on using DripDripDrop:
     * in *Tiny Tiny RSS* open the preferences by navigating to `Actions` -> `Preferences`

@@ -62,7 +62,6 @@ On Android I highly recommend Andrew Dolgov's [client](https://play.google.com/s
 DripDripDrop is using:
 
 - [Hogan.js](https://github.com/twitter/hogan.js) - logic-less templating
-- [Amplify.Store](http://amplifyjs.com/api/store/) - client-side storage
 - ruto.js - `location.hash` router
 - [min.js](https://github.com/remy/min.js) - a tiny library for modern browsers
 - [Vimium](https://github.com/philc/vimium) - for link highlighting

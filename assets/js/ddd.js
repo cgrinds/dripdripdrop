@@ -11,6 +11,25 @@ dddns.ddd = function(w) {
   //return d.getElementById(id);
   //};
 
+  // amplify is global so ddd-ios can see it
+  amplify = {
+    store: function(key, value) {
+      if ( value === undefined ) {
+        var json = localStorage.getItem(key);
+        if (json) {
+          return JSON.parse(json).data;
+        }
+        return undefined;
+      }
+      if (value === null) {
+				localStorage.removeItem(key);
+        return; 
+      }
+      var json = JSON.stringify({data: value});
+      localStorage.setItem(key, json);
+    },
+  };
+
   var pubsubCache = {},
     clone = function(obj) {
       var target = {};

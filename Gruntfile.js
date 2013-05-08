@@ -2,7 +2,6 @@ module.exports = function(grunt) {
   var libCommon = [
       'assets/js/libs/min.js',
       'assets/js/libs/ruto.js',
-      'assets/js/libs/amplify.store.js',
       'assets/js/libs/hogan.js',
   ];
   var andWeb = [

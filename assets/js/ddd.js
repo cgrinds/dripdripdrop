@@ -586,7 +586,7 @@ dddns.ddd = function(w) {
       ddd.feeds.removeFeeds(false);
     },
 
-    removeFeeds: function(cancel) {
+    removeFeeds: function() {
       var feed = ddd.feeds.feedToDelete;
       if (!feed) return;
       var msg = {
@@ -940,8 +940,7 @@ dddns.ddd = function(w) {
 
     renderHeadlines: function(_data) {
       if (!_data) return;
-      var data = _data.slice(),
-        tmpl1 = tmpl('feeds-load');
+      var data = _data.slice();
       ddd.feed.currentHeadlines = data;
       var moreOnPage = $('.more-link').length > 0;
       var html = '<ul class="tableview tableview-links" id="dddlist">' +
@@ -963,7 +962,7 @@ dddns.ddd = function(w) {
       if (feed) {
         feed.unread = feed.unread + 1;
         ddd.feeds.storeAgain(feed);
-        ddd.feed.addArticleToUI(article, feed);
+        ddd.feed.addArticleToUI(article);
         ddd.feed.replaceFeedUI(feed);
 
         // advance the selection if marking unread from feed view
@@ -989,7 +988,7 @@ dddns.ddd = function(w) {
       delete ddd.feeds.feedsRemoved[feed.id];
       feedsById[feed.id] = feed;
       amplify.store('feeds-by-id', feedsById);
-      ddd.feed.addArticleToUI(article, feed);
+      ddd.feed.addArticleToUI(article);
       ddd.feed.replaceFeedUI(feed);
       ddd.feeds.render();
     },
@@ -1062,7 +1061,7 @@ dddns.ddd = function(w) {
       }
     },
 
-    addArticleToUI: function(article, feed) {
+    addArticleToUI: function(article) {
       // when the article was marked read the feed count was NOT decremented
       // in the store so no need to undo that
       if (!article) return;
@@ -1382,7 +1381,7 @@ dddns.ddd = function(w) {
     }
   };
 
-  ddd.scrollPage = function(dir, sel) {
+  ddd.scrollPage = function(dir) {
     window.scrollBy(0, 60 * dir);
   };
 
@@ -1459,7 +1458,7 @@ dddns.ddd = function(w) {
     var sel = ddd.getSel();
     if (sel === undefined) return;
     if (sel.name === 'article') {
-      ddd.scrollPage(dir, sel);
+      ddd.scrollPage(dir);
       return;
     }
     sel.sel = sel.sel + dir;
@@ -1533,7 +1532,7 @@ dddns.ddd = function(w) {
       ruto.go('/');
     }
   })
-    .add('/', 'home', function(path) {
+    .add('/', 'home', function() {
     ddd.feed.showSelection();
   })
     .add('/about', 'about')
@@ -1541,7 +1540,7 @@ dddns.ddd = function(w) {
     ddd.settingsView.render();
   })
     .add('/login', 'login')
-    .add('/login_submit', function(path) {
+    .add('/login_submit', function() {
     ddd.login.attempt_login();
   })
     .add(/^\/feed\/(\d+)$/i, 'feed', function(path, id) {

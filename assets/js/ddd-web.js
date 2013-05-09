@@ -143,6 +143,10 @@ dddns.dddPlat = function(w) {
       ddd.feeds.cmd_toggleStar();
       return false;
     });
+    Mousetrap.bind('g l', function() {
+      ddd.logout();
+      return false;
+    });
   };
 
   var addDialogKeys = function() {

@@ -115,6 +115,14 @@ dddns.ddd = function(w) {
       console.log(msg);
       ddd.feeds.reload(true);
     },
+
+    logout: function() {
+      ['feeds', 'feeds-by-id', 'feeds-sid'].forEach(function(key) {
+        localStorage.removeItem(key);
+      });
+      ruto.go('/login');
+      ddd.login.render();
+    }
   };
 
   var timeout = 20000; // 20 seconds timeout
@@ -1523,10 +1531,12 @@ dddns.ddd = function(w) {
     .config({
     before: function(path, name) {
       ddd.hideAllViews();
-      var view = $('#view-' + name);
-      view.classList.remove('hidden');
-      ddd.prevHref = this.previous;
-      ddd.currentView = name;
+      if(name) {
+        var view = $('#view-' + name);
+        view.classList.remove('hidden');
+        ddd.prevHref = this.previous;
+        ddd.currentView = name;
+      }
     },
     notfound: function() {
       ruto.go('/');
@@ -1539,6 +1549,9 @@ dddns.ddd = function(w) {
     .add('/settings', 'settings', function() {
     ddd.settingsView.render();
   })
+    .add('/logout', function(){
+      ddd.logout();
+    })
     .add('/login', 'login')
     .add('/login_submit', function() {
     ddd.login.attempt_login();

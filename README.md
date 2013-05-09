@@ -7,36 +7,30 @@ A simple, fast, Tiny Tiny RSS reader.
 What is it?
 -----------
 
-A web client for [Tiny Tiny Rss](http://tt-rss.org). It uses the [JSON API](http://tt-rss.org/redmine/projects/tt-rss/wiki/JsonApiReference) to communiate with your *tt-rss* server.
+A web client for [Tiny Tiny Rss](http://tt-rss.org). It uses the [JSON API](http://tt-rss.org/redmine/projects/tt-rss/wiki/JsonApiReference) to communiate with your tt-rss server.
 
 I'm a big fan of keyboard shortcuts - coupled with the right reader they let me rip through a lot of feeds quickly. Some things are only possible via keyboard shortcuts at the moment, I might change that in the future.
 
 You can see all of the shortcuts on the [About](http://gstaff.org/dripdripdrop/screenshots/keys.png) screen.
 
-DripDripDrop takes a lot of inspiration fron [Newsbeuter](http://www.newsbeuter.org/), and a lot code and inspiration from [Lim Chee Aun](http://cheeaun.com/)'s [HackerWeb](http://hackerwebapp.com/).
+DripDripDrop takes a lot of inspiration from [Newsbeuter](http://www.newsbeuter.org/), and code and inspiration from [Lim Chee Aun](http://cheeaun.com/)'s [HackerWeb](http://hackerwebapp.com/).
 
 Installation and Usage
 ----------------------
 
-You will need *Tiny Tiny RSS* installed on a machine, let's call that machine **ttrss-server**.
+You will need *Tiny Tiny RSS* installed on a machine.
 
 1. Grab the latest [release](https://github.com/cgrinds/dripdripdrop/tree/master/dist).
 
-2. Untar the release on **ttrss-server** (for example tar xvf ddd-0.5.0.tgz). 
-If you have CORs enabled on your server - ddd will work fine. That's how I develop, 
-the laptop talks to a ttrss server on a different machine.
+2. Untar the release on your server (for example tar xvf ddd-0.5.0.tgz). 
 
 3. Copy `ddd/assets/js/config-dist.js` to `ddd/assets/js/config.js`.
 
-4. Edit the `config.js` and update the `api` to point to your **ttrss-server**'s API end-point. This is usually something like `/tt-rss/`. For example if you get to ttrss by surfing to http://example.com/path/to/tt-rss. You should change the `api` to `/path/to/tt-rss` 
+4. Edit the `config.js` and update the `api` to point to your ttrss-server's API end-point. This is usually something like `/tt-rss/`. For example if you get to ttrss by surfing to http://example.com/path/to/tt-rss. You should change the `api` to `/path/to/tt-rss` 
 
 Take a look at [troubleshooting](https://github.com/cgrinds/dripdripdrop/wiki/Troubleshooting) if you have problems.
-
-5. Enable API access for each user that plans on using DripDripDrop:
-    * in *Tiny Tiny RSS* open the preferences by navigating to `Actions` -> `Preferences`
-    * Make sure the `Enable API access` checkbox is selected
      
-6. Profit!!! or at least read your feeds.
+5. Profit!!! or at least read your feeds.
 
 Current Features
 ----------------

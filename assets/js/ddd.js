@@ -7,10 +7,6 @@ dddns.ddd = function(w) {
     dddns.TF(Hogan.Template);
   }
 
-  //var $ = w.$ = function(id){
-  //return d.getElementById(id);
-  //};
-
   // amplify is global so ddd-ios can see it
   amplify = {
     store: function(key, value) {

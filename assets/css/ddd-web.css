@@ -319,8 +319,7 @@ dl.keyboard-mappings dd {
 	color: #000;
 }
 .sel {
-	/*background-color: #DAE6F6;*/
-    background-color: #F6F6EF;
+	background-color: #DAE6F6;
 }
 
 .tableview-links li>a:hover{

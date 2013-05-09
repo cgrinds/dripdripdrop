@@ -21,17 +21,11 @@
 
 <script>
 (function(d, ua){
-	var hasLocalStorage = false;
-	try {
-		hasLocalStorage = !!localStorage.getItem;
-	} catch(e) {}
-
 	var theme = 'web';
 	if (ua && /iPhone|iPod|iPad/.test(ua) && parseInt((ua.match(/ OS (\d+)_/i) || [,0])[1], 10) >= 5){
 		theme = 'ios';
 	}
     window._ddd_theme = theme;
-	if (hasLocalStorage) theme = localStorage['ddd:options:theme'] || theme;
 	var head = d.head || d.getElementsByTagName('head')[0];
 
 	// Use document.write to prevent FOUC
@@ -219,23 +213,5 @@
 	</div>
 </div>
 <!--YYYY_DDD-->
-<script>
-(function(ua){
-    if (ua && /Windows/.test(ua)) {
-        var ss = document.styleSheets[0];
-        var rules = ss.cssRules || ss.rules;
-        var selRule = null;
-        for (var i = 0; i < rules.length; i++) {
-            var rule = rules[i];
-            if(/sel/.test(rule.selectorText)) {
-                selRule = rule;
-                break;
-            }
-        } 
-        if(selRule !== null) 
-            selRule.style.backgroundColor = "#DAE6F6";
-    }
-})(navigator.userAgent);
-</script>
 </body>
 </html>

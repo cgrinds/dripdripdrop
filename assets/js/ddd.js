@@ -1,17 +1,17 @@
-dddns = typeof dddns === 'undefined' ? {} : dddns;
+window.dddns = typeof dddns === 'undefined' ? {} : dddns;
 dddns.ddd = function(w) {
-  var d = w.document,
-    body = d.body;
+  var d = w.document;
 
   if (typeof TEMPLATES === 'undefined') {
     dddns.TF(Hogan.Template);
   }
 
   // amplify is global so ddd-ios can see it
-  amplify = {
+  window.amplify = {
     store: function(key, value) {
+      var json;
       if ( value === undefined ) {
-        var json = localStorage.getItem(key);
+        json = localStorage.getItem(key);
         if (json) {
           return JSON.parse(json).data;
         }
@@ -21,20 +21,12 @@ dddns.ddd = function(w) {
 				localStorage.removeItem(key);
         return; 
       }
-      var json = JSON.stringify({data: value});
+      json = JSON.stringify({data: value});
       localStorage.setItem(key, json);
     },
   };
 
-  var pubsubCache = {},
-    clone = function(obj) {
-      var target = {};
-      for (var i in obj) {
-        if (obj.hasOwnProperty(i)) target[i] = obj[i];
-      }
-      return target;
-    };
-
+  var pubsubCache = {};
   var ddd = {
     pollRetries: 0,
     // PubSub
@@ -80,21 +72,20 @@ dddns.ddd = function(w) {
         return list.slice(1);
       else if (index == list.length - 1)
         return list.slice(0, list.length - 1);
-      else {
-        var left = list.slice(0, index);
-        var right = list.slice(index + 1, list.length);
-        left.push.apply(left, right);
-        return left;
-      }
+      var left = list.slice(0, index),
+        right = list.slice(index + 1, list.length);
+      left.push.apply(left, right);
+      return left;
     },
 
     pollServer: function() {
       if (typeof ddd.config.refresh_every === 'undefined' || !ddd.config.refresh_every) return;
       if (ddd.config.refresh_every <= 0) return;
       if (ddd.pollTimer) {
-        clearTimeout(ddd.pollTimer);
+        window.clearTimeout(ddd.pollTimer);
       }
-      ddd.pollTimer = setTimeout(ddd.pollRefresh, 1000 * 60 * ddd.config.refresh_every); // every x minutes
+      // every x minutes
+      ddd.pollTimer = window.setTimeout(ddd.pollRefresh, 1000 * 60 * ddd.config.refresh_every);
       ddd.pollRetries = 0;
     },
 
@@ -102,12 +93,12 @@ dddns.ddd = function(w) {
       //exponential back off
       ddd.pollRetries = ddd.pollRetries + 1;
       var milliMinutes = 1000 * 60 * ddd.config.refresh_every;
-      ddd.pollTimer = setTimeout(ddd.pollRefresh, Math.pow(2, ddd.pollRetries) * milliMinutes); // every 15m
+      ddd.pollTimer = window.setTimeout(ddd.pollRefresh, Math.pow(2, ddd.pollRetries) * milliMinutes);
     },
 
     pollRefresh: function() {
-      var currentdate = new Date();
-      var msg = "Poll at " + currentdate.getFullYear() + "/" + (currentdate.getMonth() + 1) + "/" + currentdate.getDate() + " " + currentdate.getHours() + ":" + currentdate.getMinutes() + ":" + currentdate.getSeconds();
+      var currentDate = new Date();
+      var msg = "Poll at " + currentDate.getFullYear() + "/" + (currentDate.getMonth() + 1) + "/" + currentDate.getDate() + " " + currentDate.getHours() + ":" + currentDate.getMinutes() + ":" + currentDate.getSeconds();
       console.log(msg);
       ddd.feeds.reload(true);
     },
@@ -123,127 +114,56 @@ dddns.ddd = function(w) {
 
   var timeout = 20000; // 20 seconds timeout
 
-  var doLogin = function(username, password, success, error) {
-    var onlogin = function(data) {
-      // store the sid
-      if (data.session_id) {
-        amplify.store('feeds-sid', data.session_id);
-      }
-      success(data);
-    };
-    var onfail = function(e) {
-      error(e);
-    };
-    loginMsg = {
-      op: "login",
-      user: username,
-      password: password
-    };
-    req(loginMsg, onlogin, onfail);
-  };
-
-  var req = function(msg, success, error) {
-    if (!success) success = function() {};
-    if (!error) error = function() {};
-
-    var onsuccess = function(data, status, xhr) {
-      var response = data;
-      //try {
-      //response = JSON.parse(this.responseText);
-      //} catch (e){}
-      console.log('<- ', response);
-      if (response && !response.error) {
-        if (response.content) {
-          var loginError = 'error' in response.content;
-          if (loginError) {
-            if (/login/i.test(location.href)) {
-              return error(response.content);
-            } else {
-              amplify.store('feeds-sid', null); // remove from store
-              ruto.go("/login");
-              ddd.login.render();
-            }
-            //return retryLogin(msg, success, error);  
-          }
-        }
-        success(response.content);
-        //postMessage({
-        //url: url,
-        //response: response
-        //});
-      } else {
-        error(response);
-        //postMessage({
-        //url: url,
-        //error: true
-        //});
-      }
-    };
-
-    var onerror = function(e) {
-      console.log('*- ', e);
-      error(JSON.parse(JSON.stringify(e)));
-      //postMessage({
-      //url: url,
-      //error: JSON.parse(JSON.stringify(e))
-      //});
-    };
-
-    var sid = amplify.store('feeds-sid');
-    if (sid) msg.sid = sid;
-    console.log("->", msg);
-    $.ajax({
-      type: 'POST',
-      url: ddd.config.api + "api/",
-      contentType: 'application/json',
-      dataType: 'json',
-      timeout: timeout,
-      data: JSON.stringify(msg),
-      success: onsuccess,
-      error: onerror
-    });
-  };
-
   var ttrss = {
-    feeds: function(msg, success, error) {
-      req(msg, success, error);
-    },
+    api: function(msg, success, error) {
+      if (!success) success = function() {};
+      if (!error) error = function() {};
 
-    headlines: function(msg, success, error) {
-      req(msg, success, error);
-    },
+      var onsuccess = function(data) {
+        var response = data;
+        console.log('<- ', response);
+        if (response && !response.error) {
+          if (response.content) {
+            var loginError = 'error' in response.content;
+            if (loginError) {
+              if (/login/i.test(window.location.href)) {
+                return error(response.content);
+              } else {
+                amplify.store('feeds-sid', null); // remove from store
+                ruto.go("/login");
+                ddd.login.render();
+              }
+            }
+          }
+          success(response.content);
+        } else {
+          error(response);
+        }
+      };
 
-    login: function(username, password, success, error) {
-      doLogin(username, password, success, error);
-    },
+      var onerror = function(e) {
+        console.log('*- ', e);
+        error(JSON.parse(JSON.stringify(e)));
+      };
 
-    updateArticle: function(msg, success, error) {
-      msg.op = "updateArticle";
-      req(msg, success, error);
-    },
-
-    catchupFeed: function(msg, success, error) {
-      req(msg, success, error);
-    },
-
-    subscribeToFeed: function(msg, success, error) {
-      req(msg, success, error);
-    },
-    unsubscribeFeed: function(msg, success, error) {
-      req(msg, success, error);
-    },
-    getConfig: function(msg, success, error) {
-      req(msg, success, error);
+      var sid = amplify.store('feeds-sid');
+      if (sid) msg.sid = sid;
+      console.log("->", msg);
+      $.ajax({
+        type: 'POST',
+        url: ddd.config.api + "api/",
+        contentType: 'application/json',
+        dataType: 'json',
+        timeout: timeout,
+        data: JSON.stringify(msg),
+        success: onsuccess,
+        error: onerror
+      });
     },
   };
 
   var tmpl = ddd.tmpl;
   var platform = "Mac";
-
-  // Fix browsers freak out of amplify.store.sessionStorage not a function
-  if (!amplify.store.sessionStorage || typeof amplify.store.sessionStorage != 'function') {
-    amplify.store.sessionStorage = amplify.store.memory; // Fallback to in-memory storage
-  }
 
   var $homeScroll = d.querySelector('#view-home .scroll'),
     $homeScrollSection = $homeScroll.querySelector('section'),
@@ -274,8 +194,7 @@ dddns.ddd = function(w) {
       var tmpl1 = tmpl('feeds'),
         tmpl2 = tmpl('feed-partial'),
         hasIcon = feed.has_icon && ddd.config.iconPath,
-        vars = {feed: feed}, 
-        html;
+        vars = {feed: feed};
 
       feed.type = feed.unread > 0 ? "unread" : "read";
       if (feed.title === "") feed.title = "&nbsp;";
@@ -284,16 +203,16 @@ dddns.ddd = function(w) {
       }
       if (hasIcon) vars.icon = ddd.config.iconPath;
 
-      html = tmpl1.render(vars, {
+      return tmpl1.render(vars, {
         feed_partial: tmpl2
       });
-      return html;
     },
+
     markupHeadline: function(article) {
       var vars = {
         article: article
       };
-      if (ddd.feeds.currentID < 0 && ddd.config.iconPath && typeof article.icon === 'undefined') {
+      if (ddd.feeds.currentID < 0 && ddd.config.iconPath) {
         // show icon of feed when reading special feed
         var feedsById = amplify.store('feeds-by-id');
         //debug code remove
@@ -306,36 +225,40 @@ dddns.ddd = function(w) {
         }
       }
       article.url = '#/article/' + article.id;
-      article.type = article.unread > 0 ? "unread" : "read";
+      article.type = article.unread ? "unread" : "read";
       return tmpl('headline', vars);
     },
+
     markupFeeds: function(data, i) {
-      var html = '';
+      var html = '',
+        markupFeed = ddd.feeds.markupFeed;
       if (!i) i = 1;
-      var markupFeed = ddd.feeds.markupFeed;
       data.forEach(function(item) {
         item.i = i++;
         html += markupFeed(item);
       });
       return html;
     },
+
     markupHeadlines: function(data, i) {
-      var html = '';
+      var html = '',
+        markupHeadline = ddd.feeds.markupHeadline;
       if (!i) i = 1;
-      var markupHeadline = ddd.feeds.markupHeadline;
       data.forEach(function(item) {
         item.i = i++;
         html += markupHeadline(item);
       });
       return html;
     },
+
     feedsAndMore: function(data, i) {
-      var html = ddd.feeds.markupFeeds(data, i);
+      var html = ddd.feeds.markupFeeds(data, i),
+        next;
       html += data.length >= ddd.config.FEED_LIMIT ?
         '<li><a class="more-link">More&hellip;<span class="loader"></span></a></li>' : '';
 
       if (data.length >= ddd.config.FEED_LIMIT) {
-        var next = ddd.feeds.skipFeeds;
+        next = ddd.feeds.skipFeeds;
         if (!next) next = 0;
         ddd.feeds.skipFeeds = next + ddd.config.FEED_LIMIT;
       }
@@ -345,7 +268,7 @@ dddns.ddd = function(w) {
     render: function(opts) {
       if (loadingFeeds) return;
       if (!opts) opts = {};
-      var cached = amplify.store('ddd-cached');
+      var feeds = amplify.store('feeds');
       var tmpl1 = tmpl('feeds-load');
 
       var loadFeeds = function(_data) {
@@ -357,22 +280,8 @@ dddns.ddd = function(w) {
         ddd.pub('onRenderNews');
       };
 
-      if (cached) {
-        var feeds = amplify.store('feeds');
-        var feedsById = amplify.store('feeds-by-id');
-        var delay = opts.delay;
-        if (delay) {
-          loadingFeeds = true;
-          $homeScrollSection.innerHTML = tmpl1.render({
-            loading: true
-          });
-          setTimeout(function() {
-            loadingFeeds = false;
-            loadFeeds(feeds);
-          }, delay);
-        } else {
-          loadFeeds(feeds);
-        }
+      if (feeds) {
+        loadFeeds(feeds);
       } else {
         loadingFeeds = true;
         $homeScrollSection.innerHTML = tmpl1.render({
@@ -386,21 +295,21 @@ dddns.ddd = function(w) {
         };
         var unread_only = amplify.store('view-mode');
         var cat = ddd.settings.show_special_folders ? "-4" : "-3";
-        msg = {
+        var msg = {
           op: "getFeeds",
           cat_id: cat,
           unread_only: "" + unread_only,
         };
         //if(ddd.config.FEED_LIMIT) msg['limit'] = "" + ddd.config.FEED_LIMIT;
 
-        ttrss.feeds(msg, function(data) {
-          feedsRemoved = {};
+        ttrss.api(msg, function(data) {
+          ddd.feeds.feedsRemoved = {};
           loadingFeeds = false;
           if (!data || data.error) {
             showError();
             return;
           }
-          byId = {};
+          var byId = {};
           for (var i = 0, l = data.length; i < l; i++) {
             var item = data[i];
             item.index = i;
@@ -411,9 +320,6 @@ dddns.ddd = function(w) {
           }
           amplify.store('feeds', data);
           amplify.store('feeds-by-id', byId);
-          amplify.store('ddd-cached', true, {
-            expires: 1000 * 60 * 10 // 10 minutes
-          });
           loadFeeds(data);
           ddd.pollServer();
         }, function(e) {
@@ -423,11 +329,7 @@ dddns.ddd = function(w) {
         });
       }
     },
-    settings: function() {
-      ddd.feeds.render({
-        delay: 300 // Cheat a little to make user think that it's doing something
-      });
-    },
+
     moreFeeds: function(target) {
       target.classList.add('loading');
 
@@ -446,18 +348,18 @@ dddns.ddd = function(w) {
         ddd.pub('logAPIError', 'news');
       };
 
-      var unread_only = amplify.store('view-mode');
-      var cat = ddd.settings.show_special_folders ? "-4" : "-3";
-      msg = {
+      var unread_only = amplify.store('view-mode'),
+        cat = ddd.settings.show_special_folders ? "-4" : "-3";
+      var msg = {
         op: "getFeeds",
         cat_id: cat,
         unread_only: "" + unread_only,
         limit: "" + ddd.config.FEED_LIMIT,
         offset: "" + ddd.feeds.skipFeeds,
       };
-      ttrss.feeds(msg, function(data) {
+      ttrss.api(msg, function(data) {
         loadingFeeds = false;
-        $(target).removeClass('loading');
+        target.classList.remove('loading');
         var targetParent = target.parentNode;
         if (!targetParent) return;
         if (targetParent.parentNode) targetParent.parentNode.removeChild(targetParent);
@@ -475,9 +377,6 @@ dddns.ddd = function(w) {
         }
         amplify.store('feeds', list);
         amplify.store('feeds-by-id', feedsById);
-        amplify.store('ddd-cached', true, {
-          expires: 1000 * 60 * 10 // 10 minutes
-        });
         var html = ddd.feeds.feedsAndMore(data, ddd.feeds.skipFeeds + 1);
         $('#feedslist').append(html);
         ddd.feeds.skipFeeds += ddd.config.FEED_LIMIT;
@@ -489,15 +388,16 @@ dddns.ddd = function(w) {
 
     more: function(target) {
       target.classList.add('loading');
-      var feed_id = ddd.feeds.currentID;
+      var feed_id = ddd.feeds.currentID,
+        unread_only = amplify.store('view-mode'),
+        skipBy = ddd.feeds.skip;
+        
       if (!feed_id) return;
-      var unread_only = amplify.store('view-mode');
-      var skipBy = ddd.feeds.skip;
       if (ddd.feed.currentHeadlines) {
         skipBy = ddd.feed.currentHeadlines.length;
       }
 
-      msg = {
+      var msg = {
         op: "getHeadlines",
         feed_id: "" + feed_id,
         show_content: "true",
@@ -505,10 +405,8 @@ dddns.ddd = function(w) {
         skip: "" + skipBy,
         limit: "" + ddd.config.article_limit,
       };
-      var feedsById = amplify.store('feeds-by-id');
-      var item = feedsById[feed_id];
 
-      ttrss.headlines(msg, function(_data) {
+      ttrss.api(msg, function(_data) {
         if (ddd.feeds.currentID != feed_id) return;
         target.classList.remove('loading');
         var targetParent = target.parentNode;
@@ -520,15 +418,15 @@ dddns.ddd = function(w) {
         var html = ddd.feeds.markupHeadlines(data, skipBy + 1);
         // do we still need more?
         html += data.length >= ddd.config.article_limit ?
-          '<li><a class="more-link">More&hellip;<span class="loader"></span></a></li>' : '' +
+          '<li><a class="more-link">More&hellip;<span class="loader"></span></a></li>' : 
           '</ul>';
         $('#dddlist').insertAdjacentHTML('beforeend', html);
         ddd.feeds.skip += ddd.config.article_limit;
       }, function(e) {});
     },
+
     reload: function(force) {
       if (force) {
-        amplify.store('ddd-cached', null);
         amplify.store('feeds', null);
         amplify.store('feeds-by-id', null);
         ddd.feeds.render();
@@ -548,22 +446,21 @@ dddns.ddd = function(w) {
         return;
       }
       var feed_id = curFeed.id;
-      //if (feed_id < 0) return;
 
-      msg = {
+      var msg = {
         op: "catchupFeed",
         feed_id: "" + feed_id,
       };
-      ttrss.catchupFeed(msg, function() {}, function() {});
+      ttrss.api(msg, function() {}, function() {});
 
       var unread_only = amplify.store('view-mode');
       if (unread_only)
         ddd.feed.currentHeadlines = [];
       curFeed.unread = 0;
       ddd.feed.markFeedRead(curFeed);
-      // if we marked all read from feed or article view go back to top
 
       if (unread_only) {
+      // if we marked all read from feed or article view go back to top
         if (ddd.currentView !== 'home') ruto.go('/');
       }
       ddd.feed.showSelection();
@@ -571,16 +468,17 @@ dddns.ddd = function(w) {
 
     escapePressed: function() {
       ddd.feeds.removeFeedsInline(true);
+      ddd.feed.showSelection();
     },
 
     removeFeedsInline: function(cancel) {
       var feed = ddd.feeds.feedToDelete;
       if (!feed) return;
-      var liEle = $('#feed-' + feed.id);
-      var html = ddd.feeds.markupFeed(feed);
       ddd.pub('onDialogDone');
       if (cancel) {
-        var parent = liEle.parentNode,
+        var liEle = $('#feed-' + feed.id),
+          html = ddd.feeds.markupFeed(feed),
+          parent = liEle.parentNode,
           tempDiv = document.createElement('div');
 
         tempDiv.innerHTML = html;
@@ -597,7 +495,7 @@ dddns.ddd = function(w) {
         op: 'unsubscribeFeed',
         feed_id: "" + feed.id,
       };
-      ttrss.unsubscribeFeed(msg, function(data) {
+      ttrss.api(msg, function(data) {
         var msg = "Feed removed";
         var claz = "good";
         if ('error' in data) {
@@ -616,7 +514,7 @@ dddns.ddd = function(w) {
         ele.style.display = 'block';
 
         $('#view-home h1').innerHTML = 'Feeds';
-        setTimeout(function() {
+        window.setTimeout(function() {
           ele.style.display = 'none';
         }, 3000);
       }, function(data) {
@@ -626,9 +524,10 @@ dddns.ddd = function(w) {
 
     removeFeedInline: function() {
       if (ddd.currentView !== 'home') return;
-      var sel = ddd.getSel();
-      var ele = $(sel.siz)[sel.sel];
-      var feed = ddd.getSelFeed();
+      var sel = ddd.getSel(),
+        ele = $(sel.siz)[sel.sel],
+        feed = ddd.getSelFeed();
+      if(feed.id < 0) return;
       feed.i = feed.index + 1;
       ddd.feeds.feedToDelete = feed;
       var tmpl1 = tmpl('remove-feed-inline');
@@ -641,8 +540,7 @@ dddns.ddd = function(w) {
     },
 
     addFeed: function() {
-      var tmpl1 = tmpl('add-feed');
-      $('#view-home h1').innerHTML = tmpl1.render({});
+      $('#view-home h1').innerHTML = tmpl('add-feed', {});
     },
 
     addFeedClicked: function(cancel) {
@@ -650,20 +548,22 @@ dddns.ddd = function(w) {
         $('#view-home h1').innerHTML = 'Feeds';
         return;
       }
-      var txt = $('#add-feed').value;
+      var txt = $('#add-feed').value,
+        ele = $('.msg');
+        
       if (txt.length === 0) return;
 
-      msg = {
+      var msg = {
         op: 'subscribeToFeed',
         feed_url: txt,
       };
-      ttrss.subscribeToFeed(msg, function(data) {
-        var msg = "Feed added";
-        var claz = "bad";
-        var status = data.status;
+      ttrss.api(msg, function(data) {
+        var msg = "Feed added",
+          claz = "bad",
+          status = data.status;
         if (status) {
-          var code = status.code;
-          var err = status.message;
+          var code = status.code,
+            err = status.message;
           if (code === 0) {
             msg = "Feed already exists";
             claz = "good";
@@ -675,7 +575,6 @@ dddns.ddd = function(w) {
           else if (code == 4) msg = "Invalid URL. " + err;
           else if (code == 5) msg = "Invalid URL. " + err;
         }
-        var ele = $('.msg');
         ['good', 'bad'].forEach(function(w) {
           ele.classList.remove(w);
         });
@@ -685,13 +584,11 @@ dddns.ddd = function(w) {
 
         if (claz === 'good') {
           $('#view-home h1').innerHTML = 'Feeds';
-          setTimeout(function() {
+          window.setTimeout(function() {
             ele.style.display = 'none';
           }, 3000);
         }
       }, function(e) {
-        console.log('in sub e is', e);
-        var ele = $('.msg');
         ['good', 'bad'].forEach(function(w) {
           ele.classList.remove(w);
         });
@@ -703,17 +600,18 @@ dddns.ddd = function(w) {
 
     storeAgain: function(feed) {
       // this pains me but the changes need to be written back into the store
-      var list = amplify.store('feeds');
-      var index = 0;
-      for (var i = 0, l = list.length; i < l; i++) {
+      var list = amplify.store('feeds'),
+        i = 0,
+        l = list.length,
+        map = amplify.store('feeds-by-id');
+
+      for (; i < l; i++) {
         if (list[i].id === feed.id) {
           list[i] = feed;
           break;
         }
       }
       amplify.store('feeds', list);
-
-      var map = amplify.store('feeds-by-id');
       map[feed.id] = feed;
       amplify.store('feeds-by-id', map);
     },
@@ -733,10 +631,10 @@ dddns.ddd = function(w) {
     },
 
     getConfig: function() {
-      msg = {
+      var msg = {
         op: "getConfig",
       };
-      ttrss.getConfig(msg, function(data) {
+      ttrss.api(msg, function(data) {
         for (var i in data) {
           if (data.hasOwnProperty(i)) ddd.config[i] = data[i];
         }
@@ -748,9 +646,14 @@ dddns.ddd = function(w) {
     },
 
     removeFromStoreAndUi: function(feed) {
-      var list = amplify.store('feeds');
-      var index = 0;
-      for (var i = 0, l = list.length; i < l; i++) {
+      var list = amplify.store('feeds'),
+        index = 0,
+        i = 0,
+        l = list.length,
+        map = amplify.store('feeds-by-id'),
+        feedli = $('#feed-' + feed.id);
+
+      for (; i < l; i++) {
         if (list[i].id === feed.id) {
           index = i;
           break;
@@ -759,40 +662,38 @@ dddns.ddd = function(w) {
       list = ddd.remove(list, index);
       amplify.store('feeds', list);
 
-      var map = amplify.store('feeds-by-id');
       delete map[feed.id];
       amplify.store('feeds-by-id', map);
 
-      var feedli = $('#feed-' + feed.id);
       if (feedli.length === 0) return;
       feedli.parentNode.removeChild(feedli);
     },
 
     cmd_toggleStar: function() {
       if (ddd.currentView === 'home') return;
-      var article = ddd.article.currentArticle;
-      var sel = ddd.getSel();
+      var article = ddd.article.currentArticle,
+        sel = ddd.getSel();
       if (ddd.currentView === 'feed') {
         article = ddd.feed.currentHeadlines[sel.sel];
       }
       if (!article) return;
       article.marked = !article.marked;
-      msg = {
-        article_ids: "" + article.id,
-        mode: "2", //toggle
-        field: "0"
+      var msg = {
+        op          : "updateArticle",
+        article_ids : "" + article.id,
+        mode        : "2", //toggle
+        field       : "0"
       };
-      ttrss.updateArticle(msg, function() {}, function() {});
+      ttrss.api(msg, function() {}, function() {});
 
-      var feedsByMap = amplify.store('feeds-by-id');
-      var feed = feedsByMap[ddd.feeds.currentID];
+      var feedsByMap = amplify.store('feeds-by-id'),
+        feed = feedsByMap[ddd.feeds.currentID];
       if (!feed) feed = ddd.feeds.feedsRemoved[ddd.feeds.currentID];
       if (!feed) return;
       if (ddd.currentView === 'article') {
         ddd.feed.renderTitle(feed, '#view-article .meta', article);
       }
       //ddd.pub('onStar', {article: article, feed: feed});
-
       if (ddd.currentView === "feed") {
         if (ddd.feeds.currentID === -1) {
           if (article.unread && !article.marked)
@@ -817,22 +718,25 @@ dddns.ddd = function(w) {
     },
 
     updateSpecialCounts: function() {
-      var unread_only = amplify.store('view-mode');
-      var feedsByMap = amplify.store('feeds-by-id');
-      msg = {
-        op: "getFeeds",
-        cat_id: -1,
-        unread_only: "" + unread_only,
-      };
-      ttrss.feeds(msg, function(data) {
+      var unread_only = amplify.store('view-mode'),
+        feedsByMap = amplify.store('feeds-by-id'),
+        msg = {
+          op: "getFeeds",
+          cat_id: -1,
+          unread_only: "" + unread_only,
+        };
+      ttrss.api(msg, function(data) {
         if (!data || data.error) {
-          showError();
+          $homeScrollSection.innerHTML = tmpl('feeds-load').render({
+            load_error: true
+          });
+          ddd.pub('logAPIError', 'news');
           return;
         }
         for (var i = 0, l = data.length; i < l; i++) {
-          var newItem = data[i];
-          var feed = feedsByMap[newItem.id];
-          var newUnread = parseInt(newItem.unread, 10);
+          var newItem = data[i],
+            feed = feedsByMap[newItem.id],
+            newUnread = parseInt(newItem.unread, 10);
           if (newUnread != feed.unread) {
             feed.unread = newUnread;
 
@@ -854,11 +758,13 @@ dddns.ddd = function(w) {
   ddd.feed = {
     currentHeadlines: null,
     renderTitle: function(feed, siz, article) {
-      var html;
-      var hasIcon = feed.has_icon && ddd.config.iconPath;
-      var feed_icon_id = feed.id;
+      var html,
+        hasIcon = feed.has_icon && ddd.config.iconPath,
+        feed_icon_id = feed.id,
+        feedsById = amplify.store('feeds-by-id'),
+        ele = $(siz);
+        
       if (feed.id < 0 && article) {
-        var feedsById = amplify.store('feeds-by-id');
         var realFeed = feedsById[article.feed_id];
         if (realFeed.has_icon && ddd.config.iconPath) {
           hasIcon = true;
@@ -873,21 +779,17 @@ dddns.ddd = function(w) {
       if (article && article.marked) {
         html += ' <div class="meta">' + '<a class="header-button header-button-icon header-button-right" id="view-home-settings"><button><i class="icon-star">Star</i></button></a></div>';
       }
-      var ele = $(siz);
       if (!ele.length) ele = [ele];
       ele[0].innerHTML = html;
     },
 
     render: function(_id, _feed) {
       if (!_id) return;
-
       var id = parseInt(_id, 10);
       if (ddd.feeds.currentID === id && ddd.feed.currentHeadlines !== null) {
         ddd.feed.showSelection();
         if (ddd.feed.goHomeIfFeedIsEmpty()) return;
         return;
-      } else {
-        //$('#view-feed .scroll').empty();
       }
       if (loadingHeadlines) return;
 
@@ -902,19 +804,18 @@ dddns.ddd = function(w) {
 
       var unread_only = amplify.store('view-mode');
       loadingHeadlines = true;
-      tmpl1 = tmpl('feeds-load');
-      $('#view-feed .scroll').innerHTML = tmpl1.render({
+      $('#view-feed .scroll').innerHTML = tmpl('feeds-load', {
         loading: true
       });
 
-      msg = {
+      var msg = {
         op: "getHeadlines",
         feed_id: "" + id,
         show_content: "true",
         view_mode: unread_only ? "unread" : "",
         limit: "" + ddd.config.article_limit,
       };
-      ttrss.headlines(msg, function(data) {
+      ttrss.api(msg, function(data) {
         loadingHeadlines = false;
         if (ddd.feeds.currentID != id) return;
         ddd.feed.renderHeadlines(data);
@@ -928,7 +829,7 @@ dddns.ddd = function(w) {
       // select the current feed or headline
       var sel = ddd.getSel(view);
       if (sel === undefined) return;
-      items = $(sel.siz);
+      var items = $(sel.siz);
       if (!items.length) items = [items];
       if (sel.sel >= items.length) {
         // for when you select the last itme
@@ -1022,12 +923,13 @@ dddns.ddd = function(w) {
       if (!article) return;
       if (!article.unread) return;
       article.unread = false;
-      msg = {
-        article_ids: "" + article.id,
-        mode: "0",
-        field: "2"
+      var msg = {
+        op          : "updateArticle",
+        article_ids : "" + article.id,
+        mode        : "0",
+        field       : "2"
       };
-      ttrss.updateArticle(msg, function() {}, function() {});
+      ttrss.api(msg, function() {}, function() {});
 
       var feedsByMap = amplify.store('feeds-by-id');
       var feed = feedsByMap[ddd.feeds.currentID];
@@ -1119,9 +1021,16 @@ dddns.ddd = function(w) {
       $('#view-login .scroll').innerHTML = tmpl1.render({});
     },
     doLogin: function() {
-      var un = $('#username').value;
-      var pass = $('#password').value;
-      ttrss.login(un, pass, function(suc) {
+      var msg = {
+        op: "login",
+        user: $('#username').value,
+        password: $('#password').value
+      };
+      ttrss.api(msg, function(data) {
+        // store the sid
+        if (data.session_id) {
+          amplify.store('feeds-sid', data.session_id);
+        }
         // emptying the div was the only reliable way to not have the input eat the keyevents
         $('#view-login .scroll').innerHTML = '';
         ruto.go('/');
@@ -1156,7 +1065,7 @@ dddns.ddd = function(w) {
       if (article.updated) {
         article.date = ddd.formatDate(article.updated, true);
       }
-      back = '#/feed/' + article.feed_id;
+      var back = '#/feed/' + article.feed_id;
       if (ddd.settings.show_special_folders) {
         var match = ddd.prevHref.match(/\/feed\/(\w+)$/i);
         if (match) {
@@ -1238,12 +1147,13 @@ dddns.ddd = function(w) {
       if (!article) return;
       if (article.unread) return;
       article.unread = true;
-      msg = {
-        article_ids: "" + article.id,
-        mode: "1",
-        field: "2"
+      var msg = {
+        op          : "updateArticle",
+        article_ids : "" + article.id,
+        mode        : "1",
+        field       : "2"
       };
-      ttrss.updateArticle(msg, function() {}, function() {});
+      ttrss.api(msg, function() {}, function() {});
 
       var feedsByMap = amplify.store('feeds-by-id');
       var feed = feedsByMap[ddd.feeds.currentID];
@@ -1320,7 +1230,7 @@ dddns.ddd = function(w) {
       ddd.cmd_open();
       return;
     }
-    items = $(sel.siz);
+    var items = $(sel.siz);
     if (!items.length) items = [items];
     if (sel.sel < 0 || sel.sel >= items.length) return;
     var as = items[sel.sel].querySelectorAll('a');
@@ -1357,11 +1267,14 @@ dddns.ddd = function(w) {
   };
 
   ddd.getSel = function(view) {
+    var kind = '';
     if (view !== undefined) {
       kind = view;
     } else {
-      if (ddd.currentView === 'home') kind = 'feeds';
-      else kind = ddd.currentView;
+      if (ddd.currentView === 'home')
+        kind = 'feeds';
+      else 
+        kind = ddd.currentView;
     }
     if (!kind) return undefined;
     return selections[kind];
@@ -1390,11 +1303,10 @@ dddns.ddd = function(w) {
   };
 
   ddd.cmd_open = function() {
-    var href = location.href;
     var opener = $('#opener');
     var to_open;
     if (ddd.currentView === 'article') {
-      articleA = $('#full_article');
+      var articleA = $('#full_article');
       if (!articleA) return;
       //$(to_open).click();
       to_open = articleA.getAttribute('href');
@@ -1428,8 +1340,8 @@ dddns.ddd = function(w) {
       opener.dispatchEvent(evt);
     }
 
-    var unread_only = amplify.store('view-mode');
-    feed = ddd.getSelFeed();
+    var unread_only = amplify.store('view-mode'),
+      feed = ddd.getSelFeed();
     if (unread_only && (!feed || feed.unread === 0)) {
       ruto.go('/');
       return;
@@ -1485,7 +1397,7 @@ dddns.ddd = function(w) {
     //var scrollTop = document.body.scrollTop;
     var elem = items[sel.sel];
     var elemTop = elem.offsetTop;
-    var docHeight = document.body.clientHeight;
+    //var docHeight = document.body.clientHeight;
     var isVisible = isScrolledIntoView(elem);
     if (isVisible) return;
     var offsetHeight = elem.offsetHeight;
@@ -1543,8 +1455,8 @@ dddns.ddd = function(w) {
   })
     .add('/about', 'about')
     .add('/settings', 'settings', function() {
-    ddd.settingsView.render();
-  })
+      ddd.settingsView.render();
+    })
     .add('/logout', function(){
       ddd.logout();
     })
@@ -1572,9 +1484,9 @@ if (!dddns.poll) {
       dddns.dddPlat(window);
       dddns.poll = 1;
     } else {
-      setTimeout(dddns.poll, 75);
+      window.setTimeout(dddns.poll, 75);
     }
   };
   dddns.poll = poll;
-  setTimeout(poll, 75);
+  window.setTimeout(poll, 75);
 }

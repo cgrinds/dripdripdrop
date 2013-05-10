@@ -114,10 +114,27 @@ module.exports = function(grunt) {
     },
     jshint: {
       options: {
-        es5: true,
+        indent: 2,
+        latedef: true,
+        es5    : true,
+        undef  : true,
+        unused : true,
+        browser: true,
+        globals: {
+          "dddns": true,
+          "Hogan": false,
+          "amplify": false,
+          'console': false,
+          '$': false,
+          '$all': false,
+          'ruto': false,
+          'TEMPLATES': false,
+          'Node': false,
+        },
       },
       all: [
-          'assets/js/*.js'
+          //'assets/js/*.js'
+          'assets/js/ddd.js'
       ]
     },
 

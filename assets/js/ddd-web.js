@@ -41,9 +41,6 @@ dddns.dddPlat = function(w) {
   w.addEventListener('orientationchange', adjustViewsHeight, false);
   adjustViewsHeight();
 
-  $('#view-home-settings').on('click', function() {
-    ddd.feeds.settings();
-  });
   //$('#view-home .more-link').on('click', function() {
   //ddd.feeds.moreFeeds(target);
   //});

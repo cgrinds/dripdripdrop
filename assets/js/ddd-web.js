@@ -144,6 +144,10 @@ dddns.dddPlat = function(w) {
       ddd.logout();
       return false;
     });
+    Mousetrap.bind('?', function() {
+      ruto.go('/about');
+      return false;
+    });
   };
 
   var addDialogKeys = function() {

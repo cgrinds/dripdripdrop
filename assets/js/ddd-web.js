@@ -116,11 +116,11 @@ dddns.dddPlat = function(w) {
       return false;
     });
     Mousetrap.bind('shift+j', function() {
-      ddd.article.cmd_next(1);
+      ddd.article.cmd_nextArticle(1);
       return false;
     });
     Mousetrap.bind('shift+k', function() {
-      ddd.article.cmd_next(-1);
+      ddd.article.cmd_nextArticle(-1);
       return false;
     });
     Mousetrap.bind('shift+n', function() {

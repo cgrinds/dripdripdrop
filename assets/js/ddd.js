@@ -169,7 +169,9 @@ dddns.ddd = function(w) {
     $homeScrollSection = $homeScroll.querySelector('section'),
     loadingFeeds = false,
     loadingHeadlines = false,
-    selections = {};
+    selections = {},
+    viewMode = ddd.vmOnlyUnread;
+
 
   ddd.feeds = {
     skip: 0,
@@ -293,12 +295,12 @@ dddns.ddd = function(w) {
           });
           ddd.pub('logAPIError', 'news');
         };
-        var unread_only = amplify.store('view-mode');
+        var unreadOnly = ddd.viewMode.isUnreadOnly();
         var cat = ddd.settings.show_special_folders ? "-4" : "-3";
         var msg = {
           op: "getFeeds",
           cat_id: cat,
-          unread_only: "" + unread_only,
+          unread_only: "" + unreadOnly,
         };
         //if(ddd.config.FEED_LIMIT) msg['limit'] = "" + ddd.config.FEED_LIMIT;
 
@@ -348,12 +350,12 @@ dddns.ddd = function(w) {
         ddd.pub('logAPIError', 'news');
       };
 
-      var unread_only = amplify.store('view-mode'),
+      var unreadOnly = ddd.viewMode.isUnreadOnly(),
         cat = ddd.settings.show_special_folders ? "-4" : "-3";
       var msg = {
         op: "getFeeds",
         cat_id: cat,
-        unread_only: "" + unread_only,
+        unread_only: "" + unreadOnly,
         limit: "" + ddd.config.FEED_LIMIT,
         offset: "" + ddd.feeds.skipFeeds,
       };
@@ -389,7 +391,7 @@ dddns.ddd = function(w) {
     more: function(target) {
       target.classList.add('loading');
       var feed_id = ddd.feeds.currentID,
-        unread_only = amplify.store('view-mode'),
+        unreadOnly = ddd.viewMode.isUnreadOnly(),
         skipBy = ddd.feeds.skip;
         
       if (!feed_id) return;
@@ -401,7 +403,7 @@ dddns.ddd = function(w) {
         op: "getHeadlines",
         feed_id: "" + feed_id,
         show_content: "true",
-        view_mode: unread_only ? "unread" : "",
+        view_mode: unreadOnly ? "unread" : "",
         skip: "" + skipBy,
         limit: "" + ddd.config.article_limit,
       };
@@ -453,16 +455,9 @@ dddns.ddd = function(w) {
       };
       ttrss.api(msg, function() {}, function() {});
 
-      var unread_only = amplify.store('view-mode');
-      if (unread_only)
-        ddd.feed.currentHeadlines = [];
       curFeed.unread = 0;
+      ddd.viewMode.markAllRead();
       ddd.feed.markFeedRead(curFeed);
-
-      if (unread_only) {
-      // if we marked all read from feed or article view go back to top
-        if (ddd.currentView !== 'home') ruto.go('/');
-      }
       ddd.feed.showSelection();
     },
 
@@ -617,7 +612,10 @@ dddns.ddd = function(w) {
     },
 
     cmd_toggleUnread: function() {
-      amplify.store('view-mode', !amplify.store('view-mode'));
+      ddd.settings.unread_only = !ddd.settings.unread_only;
+      amplify.store('settings', ddd.settings);
+
+      ddd.viewMode = ddd.settings.unread_only ? ddd.vmOnlyUnread : ddd.vmAll;
       if (ddd.currentView === 'feed') {
         ddd.feed.currentHeadlines = null;
         var feedsById = amplify.store('feeds-by-id');
@@ -718,12 +716,12 @@ dddns.ddd = function(w) {
     },
 
     updateSpecialCounts: function() {
-      var unread_only = amplify.store('view-mode'),
+      var unreadOnly = ddd.viewMode.isUnreadOnly(),
         feedsByMap = amplify.store('feeds-by-id'),
         msg = {
           op: "getFeeds",
           cat_id: -1,
-          unread_only: "" + unread_only,
+          unread_only: "" + unreadOnly,
         };
       ttrss.api(msg, function(data) {
         if (!data || data.error) {
@@ -788,7 +786,7 @@ dddns.ddd = function(w) {
       var id = parseInt(_id, 10);
       if (ddd.feeds.currentID === id && ddd.feed.currentHeadlines !== null) {
         ddd.feed.showSelection();
-        if (ddd.feed.goHomeIfFeedIsEmpty()) return;
+        if (ddd.viewMode.goHomeIfFeedIsEmpty()) return;
         return;
       }
       if (loadingHeadlines) return;
@@ -802,7 +800,7 @@ dddns.ddd = function(w) {
       if (feed)
         ddd.feed.renderTitle(feed, '#view-feed h1');
 
-      var unread_only = amplify.store('view-mode');
+      var unreadOnly = ddd.viewMode.isUnreadOnly(),
       loadingHeadlines = true;
       $('#view-feed .scroll').innerHTML = tmpl('feeds-load', {
         loading: true
@@ -812,7 +810,7 @@ dddns.ddd = function(w) {
         op: "getHeadlines",
         feed_id: "" + id,
         show_content: "true",
-        view_mode: unread_only ? "unread" : "",
+        view_mode: unreadOnly ? "unread" : "",
         limit: "" + ddd.config.article_limit,
       };
       ttrss.api(msg, function(data) {
@@ -903,17 +901,13 @@ dddns.ddd = function(w) {
       if (feed.unread <= 0) {
         ddd.feed.markFeedRead(feed);
         if (articleIndex > -1) {
-          ddd.feed.currentHeadlines = [];
-          $('#dddlist').innerHTML = '';
+          ddd.viewMode.removeArticleFromFeed(articleIndex);
+          //ddd.feed.renderHeadlines(ddd.feed.currentHeadlines);
         }
         return;
       }
 
-      // remove the article from the list
-      var unread_only = amplify.store('view-mode');
-      if (unread_only && articleIndex > -1) {
-        ddd.feed.currentHeadlines = ddd.remove(ddd.feed.currentHeadlines, articleIndex);
-      }
+      ddd.viewMode.removeArticleFromFeed(articleIndex);
       ddd.feed.renderHeadlines(ddd.feed.currentHeadlines);
       ddd.feed.replaceFeedUI(feed);
       ddd.feeds.storeAgain(feed);
@@ -944,27 +938,7 @@ dddns.ddd = function(w) {
 
     markFeedRead: function(feed) {
       feed.type = "read";
-      var unread_only = amplify.store('view-mode');
-      if (unread_only && feed.unread <= 0) {
-        //remove from:
-        //    the list of feeds stored in local storage
-        //    the map of feeds stored in local storage
-        //    the UI
-        ddd.feeds.removeFromStoreAndUi(feed);
-        ddd.feeds.feedsRemoved[feed.id] = feed;
-      } else {
-        // need to mutate the read/unread state of articles
-        for (var i = 0, l = ddd.feed.currentHeadlines.length; i < l; i++) {
-          ddd.feed.currentHeadlines[i].unread = false;
-        }
-        var unread = $('#view-feed .unread');
-        if (unread instanceof Node) unread = [unread];
-
-        for (i = 0, l = unread.length; i < l; i++) {
-          unread[i].setAttribute('class', 'read');
-        }
-        ddd.feed.replaceFeedUI(feed);
-      }
+      ddd.viewMode.vmMarkFeedRead(feed);
     },
 
     addArticleToUI: function(article) {
@@ -973,12 +947,7 @@ dddns.ddd = function(w) {
       if (!article) return;
       //if (ddd.feeds.currentID != article.feed_id) return;
       var headlines = ddd.feed.currentHeadlines;
-      var unread_only = amplify.store('view-mode');
-      if (unread_only) {
-        // only add the article if the view mode is unread_only since show read mode will 
-        // already have the article in the list
-        headlines.splice(article.i - 1, 0, article); // i is the display index which is 1 based
-      }
+      ddd.viewMode.vmAddArticleToHeadlines(article, headlines);
       ddd.feed.renderHeadlines(headlines);
     },
 
@@ -993,17 +962,6 @@ dddns.ddd = function(w) {
       tempDiv.innerHTML = html;
       parent.replaceChild(tempDiv.childNodes[0], ele);
     },
-
-    goHomeIfFeedIsEmpty: function() {
-      var unread_only = amplify.store('view-mode');
-      var feed = ddd.getSelFeed();
-      if (unread_only && (!feed || feed.unread === 0)) {
-        ruto.go('/');
-        return true;
-      }
-      return false;
-    },
-
   };
 
   ddd.login = {
@@ -1088,15 +1046,15 @@ dddns.ddd = function(w) {
       $('#view-article .scroll').innerHTML = tmpl1.render(vars);
     },
 
-    cmd_next: function(dir) {
+    cmd_nextArticle: function(dir) {
       if (ddd.currentView !== 'article') return;
       var sel = ddd.getSel('feed'),
-        unread_only = amplify.store('view-mode'),
+        unreadOnly = ddd.viewMode.isUnreadOnly(),
         items, as, link;
       if (dir == 1) {
         // the article we're looking at has already been removed from currentHeadlines
         // so its size has decreased by 1
-        if (!unread_only) {
+        if (!unreadOnly) {
           sel.sel++;
         }
         var next_sel = sel.sel;
@@ -1108,7 +1066,7 @@ dddns.ddd = function(w) {
         if (link.classList.contains('more-link')) {
           // click this link per normal but reset the sel since the more link replaces itself
           // if you don't you'll skip the next article
-          if (!unread_only) {
+          if (!unreadOnly) {
             sel.sel--;
           }
         }
@@ -1119,7 +1077,6 @@ dddns.ddd = function(w) {
           sel.sel = 0;
           return;
         }
-        if (!unread_only) {}
         var prev_sel = sel.sel;
         items = $all(sel.siz);
         if (prev_sel < 0) return;
@@ -1129,7 +1086,7 @@ dddns.ddd = function(w) {
         if (link.classList.contains('more-link')) {
           // click this link per normal but reset the sel since the more link replaces itself
           // if you don't you'll skip the next article
-          if (!unread_only) {
+          if (!unreadOnly) {
             sel.sel--;
           }
         }
@@ -1182,6 +1139,65 @@ dddns.ddd = function(w) {
     },
   };
 
+  ddd.vmAll = {
+    markAllRead: function() {
+    },
+    removeArticleFromFeed: function(articleIndex) {
+    },
+    vmMarkFeedRead: function(feed) {
+      // need to mutate the read/unread state of articles
+      for (var i = 0, l = ddd.feed.currentHeadlines.length; i < l; i++) {
+        ddd.feed.currentHeadlines[i].unread = false;
+      }
+      var unread = $all('#view-feed .unread');
+      for (i = 0, l = unread.length; i < l; i++) {
+        unread[i].setAttribute('class', 'read');
+      }
+      ddd.feed.replaceFeedUI(feed);
+    },
+    vmAddArticleToHeadlines: function(article, headlines) {
+    },
+    goHomeIfFeedIsEmpty: function() {
+      return false;
+    },
+    isUnreadOnly: function() {
+      return false;
+    }
+  };
+
+  ddd.vmOnlyUnread = {
+    markAllRead: function() {
+      ddd.feed.currentHeadlines = [];
+      // if we marked all read from feed or article view go back to top
+      if (ddd.currentView !== 'home') ruto.go('/');
+    },
+    removeArticleFromFeed: function(articleIndex) {
+      // remove the article from the list of headlines
+      if (articleIndex <= -1) return;
+      ddd.feed.currentHeadlines = ddd.remove(ddd.feed.currentHeadlines, articleIndex);
+    },
+    vmMarkFeedRead: function(feed) {
+      ddd.feeds.removeFromStoreAndUi(feed);
+      ddd.feeds.feedsRemoved[feed.id] = feed;
+    },
+    vmAddArticleToHeadlines: function(article, headlines) {
+      // only add the article if the view mode is unreadOnly since show read mode will 
+      // already have the article in the list
+      // i is the display index which is 1 based
+      headlines.splice(article.i - 1, 0, article); 
+    },
+    goHomeIfFeedIsEmpty: function() {
+      var feed = ddd.getSelFeed(),
+        goHome = !feed || feed.unread === 0;
+      if (goHome)
+        ruto.go('/');
+      return goHome;
+    },
+    isUnreadOnly: function() {
+      return true;
+    }
+  };
+
   ddd.resetSelections = function() {
     selections = {
       "feeds": {
@@ -1206,12 +1222,15 @@ dddns.ddd = function(w) {
   ddd.init = function() {
     ddd.settings = amplify.store('settings');
     if (!ddd.settings) ddd.settings = ddd.config;
-    var unread_only = amplify.store('view-mode');
-    if (unread_only === undefined)
-      amplify.store('view-mode', true);
+    var unreadOnly = ddd.settings.unread_only;
+    if (unreadOnly === undefined) {
+      ddd.settings.unread_only = true;
+      unreadOnly = true;
+    }
+    ddd.viewMode = unreadOnly ? ddd.vmOnlyUnread : ddd.vmAll;
+    
     ddd.login.render();
     ddd.resetSelections();
-    //ddd.feeds.render();
     ruto.init();
     var userAgent = navigator.userAgent;
     if (userAgent.indexOf("Mac") != -1)
@@ -1253,7 +1272,7 @@ dddns.ddd = function(w) {
     if (ddd.currentView === 'article') {
       // when there are no more headlines in a feed it will be removed by this point
       // so go back to the top instead of showing an empty list
-      if (ddd.feed.goHomeIfFeedIsEmpty()) return;
+      if (ddd.viewMode.goHomeIfFeedIsEmpty()) return;
       // instead of ruto.back() use this since if you view multiple articles via Shift-J up doesnt
       // really do what you want
       if (!ddd.feeds.currentID) return;
@@ -1303,8 +1322,9 @@ dddns.ddd = function(w) {
   };
 
   ddd.cmd_open = function() {
-    var opener = $('#opener');
-    var to_open;
+    var opener = $('#opener'),
+      to_open;
+    if (ddd.currentView === 'home') return;
     if (ddd.currentView === 'article') {
       var articleA = $('#full_article');
       if (!articleA) return;
@@ -1339,13 +1359,7 @@ dddns.ddd = function(w) {
       }
       opener.dispatchEvent(evt);
     }
-
-    var unread_only = amplify.store('view-mode'),
-      feed = ddd.getSelFeed();
-    if (unread_only && (!feed || feed.unread === 0)) {
-      ruto.go('/');
-      return;
-    }
+    if (ddd.viewMode.goHomeIfFeedIsEmpty()) return;
     ddd.feed.showSelection();
   };
 

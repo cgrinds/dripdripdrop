@@ -12,6 +12,9 @@
     refresh_every:  15,
 
     show_special_folders: false,
+
+    // only show unread feeds and articles
+    unread_only: true,
   };
 
   window._ddd_config = config;

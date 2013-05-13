@@ -162,16 +162,13 @@ dddns.ddd = function(w) {
     },
   };
 
-  var tmpl = ddd.tmpl;
-  var platform = "Mac";
-
   var $homeScroll = d.querySelector('#view-home .scroll'),
     $homeScrollSection = $homeScroll.querySelector('section'),
     loadingFeeds = false,
     loadingHeadlines = false,
     selections = {},
-    viewMode = ddd.vmOnlyUnread;
-
+    tmpl = ddd.tmpl,
+    platform = "Mac";
 
   ddd.feeds = {
     skip: 0,
@@ -785,9 +782,9 @@ dddns.ddd = function(w) {
       if (!_id) return;
       var id = parseInt(_id, 10);
       if (ddd.feeds.currentID === id && ddd.feed.currentHeadlines !== null) {
-        ddd.feed.showSelection();
+        //ddd.feed.showSelection();
         if (ddd.viewMode.goHomeIfFeedIsEmpty()) return;
-        return;
+        //return;
       }
       if (loadingHeadlines) return;
 
@@ -800,7 +797,7 @@ dddns.ddd = function(w) {
       if (feed)
         ddd.feed.renderTitle(feed, '#view-feed h1');
 
-      var unreadOnly = ddd.viewMode.isUnreadOnly(),
+      var unreadOnly = ddd.viewMode.isUnreadOnly();
       loadingHeadlines = true;
       $('#view-feed .scroll').innerHTML = tmpl('feeds-load', {
         loading: true
@@ -827,8 +824,7 @@ dddns.ddd = function(w) {
       // select the current feed or headline
       var sel = ddd.getSel(view);
       if (sel === undefined) return;
-      var items = $(sel.siz);
-      if (!items.length) items = [items];
+      var items = $all(sel.siz);
       if (sel.sel >= items.length) {
         // for when you select the last itme
         if (sel.sel >= items.length) {

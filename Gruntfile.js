@@ -118,7 +118,7 @@ module.exports = function(grunt) {
         latedef: true,
         es5    : true,
         undef  : true,
-        unused : true,
+        unused : 'vars',
         browser: true,
         globals: {
           "dddns": true,

@@ -821,16 +821,14 @@ dddns.ddd = function(w) {
     },
 
     showSelection: function(view) {
-      // select the current feed or headline
       var sel = ddd.getSel(view);
       if (sel === undefined) return;
       var items = $all(sel.siz);
+      if (items.length === 0) return;
       if (sel.sel >= items.length) {
         // for when you select the last itme
-        if (sel.sel >= items.length) {
-          sel.sel = items.length - 1;
-          if (sel.sel < 0) sel.sel = 0;
-        }
+        sel.sel = items.length - 1;
+        if (sel.sel < 0) sel.sel = 0;
       }
       var item = items[sel.sel];
       if (!item.classList) return;

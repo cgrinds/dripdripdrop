@@ -8,9 +8,13 @@ dddns.ddd = function(w) {
 
   // amplify is global so ddd-ios can see it
   window.amplify = {
+    db: {},
     store: function(key, value) {
       var json;
       if ( value === undefined ) {
+        if(key === 'feeds-by-id') {
+          return amplify.db['feeds-by-id'];
+        }
         json = localStorage.getItem(key);
         if (json) {
           return JSON.parse(json).data;
@@ -20,6 +24,10 @@ dddns.ddd = function(w) {
       if (value === null) {
 				localStorage.removeItem(key);
         return; 
+      }
+      if(key === 'feeds-by-id') {
+        amplify.db['feeds-by-id'] = value;
+        return;
       }
       json = JSON.stringify({data: value});
       localStorage.setItem(key, json);
@@ -173,7 +181,6 @@ dddns.ddd = function(w) {
   ddd.feeds = {
     skip: 0,
     skipFeeds: 0,
-    feedsRemoved: {},
     specialIdToName: {
       1: "starred",
       2: "published",
@@ -302,7 +309,6 @@ dddns.ddd = function(w) {
         //if(ddd.config.FEED_LIMIT) msg['limit'] = "" + ddd.config.FEED_LIMIT;
 
         ttrss.api(msg, function(data) {
-          ddd.feeds.feedsRemoved = {};
           loadingFeeds = false;
           if (!data || data.error) {
             showError();
@@ -434,26 +440,15 @@ dddns.ddd = function(w) {
 
     markAllRead: function() {
       var curFeed = ddd.getSelFeed();
-      if (!curFeed) {
-        // this is an interesting case. if a feed has 1 article and navigated to the article
-        // it gets marked read so when you try to markAllRead the above call to getSelFeed
-        // will return null since the feed has been removed from feeds-by-id.
-        // The right thing feels like to navigate back to the list of feeds
-        if (ddd.currentView === 'article') {
-          ruto.go('/');
-        }
-        return;
-      }
-      var feed_id = curFeed.id;
 
       var msg = {
         op: "catchupFeed",
-        feed_id: "" + feed_id,
+        feed_id: "" + curFeed.id,
       };
       ttrss.api(msg, function() {}, function() {});
 
       curFeed.unread = 0;
-      ddd.viewMode.markAllRead();
+      ddd.viewMode.markAllRead(curFeed);
       ddd.feed.markFeedRead(curFeed);
       ddd.feed.showSelection();
     },
@@ -495,7 +490,7 @@ dddns.ddd = function(w) {
           claz = "bad";
         } else {
           // remove from cache and UI
-          ddd.feeds.removeFromStoreAndUi(feed);
+          ddd.feeds.removeFromStoreAndUI(feed);
         }
         var ele = $('.msg');
         ['good', 'bad'].forEach(function(w) {
@@ -590,35 +585,17 @@ dddns.ddd = function(w) {
       });
     },
 
-    storeAgain: function(feed) {
-      // this pains me but the changes need to be written back into the store
-      var list = amplify.store('feeds'),
-        i = 0,
-        l = list.length,
-        map = amplify.store('feeds-by-id');
-
-      for (; i < l; i++) {
-        if (list[i].id === feed.id) {
-          list[i] = feed;
-          break;
-        }
-      }
-      amplify.store('feeds', list);
-      map[feed.id] = feed;
-      amplify.store('feeds-by-id', map);
-    },
-
     cmd_toggleUnread: function() {
+      var feedsById = amplify.store('feeds-by-id'),
+        feedID = ddd.feeds.currentID;
       ddd.settings.unread_only = !ddd.settings.unread_only;
       amplify.store('settings', ddd.settings);
 
       ddd.viewMode = ddd.settings.unread_only ? ddd.vmOnlyUnread : ddd.vmAll;
       if (ddd.currentView === 'feed') {
         ddd.feed.currentHeadlines = null;
-        var feedsById = amplify.store('feeds-by-id');
-        ddd.feed.render(ddd.feeds.currentID, feedsById[ddd.feeds.currentID]);
+        ddd.feed.render(feedID, feedsById[feedID]);
       }
-
       // unfortunately the feeds need to be reloaded even when looking at headlines
       // otherwise when you go back up ther list of feeds will be wrong
       ddd.feeds.skipFeeds = 0;
@@ -640,7 +617,7 @@ dddns.ddd = function(w) {
       }, function(e) {});
     },
 
-    removeFromStoreAndUi: function(feed) {
+    removeFromStoreAndUI: function(feed) {
       var list = amplify.store('feeds'),
         index = 0,
         i = 0,
@@ -667,7 +644,8 @@ dddns.ddd = function(w) {
     cmd_toggleStar: function() {
       if (ddd.currentView === 'home') return;
       var article = ddd.article.currentArticle,
-        sel = ddd.getSel();
+        sel = ddd.getSel(),
+        curId = ddd.feeds.currentID;
       if (ddd.currentView === 'feed') {
         article = ddd.feed.currentHeadlines[sel.sel];
       }
@@ -682,17 +660,16 @@ dddns.ddd = function(w) {
       ttrss.api(msg, function() {}, function() {});
 
       var feedsByMap = amplify.store('feeds-by-id'),
-        feed = feedsByMap[ddd.feeds.currentID];
-      if (!feed) feed = ddd.feeds.feedsRemoved[ddd.feeds.currentID];
+        feed = feedsByMap[curId];
       if (!feed) return;
       if (ddd.currentView === 'article') {
         ddd.feed.renderTitle(feed, '#view-article .meta', article);
       }
       //ddd.pub('onStar', {article: article, feed: feed});
       if (ddd.currentView === "feed") {
-        if (ddd.feeds.currentID === -1) {
+        if (curId === -1) {
           if (article.unread && !article.marked)
-            ddd.feed.updateFeedAndLsRemove(feed, -1);
+            ddd.feed.updateFeed(feed, -1);
         } else {
           var html = ddd.feeds.markupHeadline(article),
             eles = $(sel.siz),
@@ -747,7 +724,17 @@ dddns.ddd = function(w) {
         amplify.store('feeds', data);
         amplify.store('feeds-by-id', feedsByMap);
       });
-    }
+    },
+
+    commitFeed: function() {
+      if(!ddd.feeds.currentID) return;
+      var feed = amplify.store('feeds-by-id')[ddd.feeds.currentID];
+      console.log('in commit feed=', feed);
+      if (!feed) return;
+      if (feed.unread === 0) {
+        ddd.viewMode.markAllRead(feed);
+      }
+    },
   };
 
   ddd.feed = {
@@ -782,9 +769,9 @@ dddns.ddd = function(w) {
       if (!_id) return;
       var id = parseInt(_id, 10);
       if (ddd.feeds.currentID === id && ddd.feed.currentHeadlines !== null) {
-        //ddd.feed.showSelection();
-        if (ddd.viewMode.goHomeIfFeedIsEmpty()) return;
-        //return;
+        ddd.feed.showSelection();
+        //if (ddd.viewMode.goHomeIfFeedIsEmpty()) return;
+        return;
       }
       if (loadingHeadlines) return;
 
@@ -826,7 +813,7 @@ dddns.ddd = function(w) {
       var items = $all(sel.siz);
       if (items.length === 0) return;
       if (sel.sel >= items.length) {
-        // for when you select the last itme
+        // for when you select the last item
         sel.sel = items.length - 1;
         if (sel.sel < 0) sel.sel = 0;
       }
@@ -855,56 +842,18 @@ dddns.ddd = function(w) {
       ddd.pub('onRenderComments');
     },
 
-    updateFeedAndLsAdd: function(feed, article, feed_id) {
-      if (feed) {
-        feed.unread = feed.unread + 1;
-        ddd.feeds.storeAgain(feed);
-        ddd.feed.addArticleToUI(article);
-        ddd.feed.replaceFeedUI(feed);
-
-        // advance the selection if marking unread from feed view
-        if (ddd.currentView === 'feed') {
-          ddd.cmd_move_sel(1);
-        }
-        return;
-      }
-      // feed was not found in the feedsById map above
-      // that's OK that means this article was the last one in the feed and
-      // it has already been removed
-      feed = ddd.feeds.feedsRemoved[feed_id];
-      if (!feed) {
-        // not sure what to do here, can't find the feed in either map
-        return;
-      }
-      var feedsById = amplify.store('feeds-by-id');
-      feed.unread = 1;
-      var list = amplify.store('feeds');
-      list.splice(feed.index, 0, feed);
-      amplify.store('feeds', list);
-
-      delete ddd.feeds.feedsRemoved[feed.id];
-      feedsById[feed.id] = feed;
-      amplify.store('feeds-by-id', feedsById);
-      ddd.feed.addArticleToUI(article);
-      ddd.feed.replaceFeedUI(feed);
-      ddd.feeds.render();
-    },
-
-    updateFeedAndLsRemove: function(feed, articleIndex) {
-      feed.unread = feed.unread - 1;
+    /*
+     * Adjust the unread count.
+     * Render headlines and update home view
+     */
+    updateFeed: function(feed, count) {
+      feed.unread = feed.unread + count;
+      ddd.feed.renderHeadlines(ddd.feed.currentHeadlines);
       if (feed.unread <= 0) {
         ddd.feed.markFeedRead(feed);
-        if (articleIndex > -1) {
-          ddd.viewMode.removeArticleFromFeed(articleIndex);
-          //ddd.feed.renderHeadlines(ddd.feed.currentHeadlines);
-        }
         return;
       }
-
-      ddd.viewMode.removeArticleFromFeed(articleIndex);
-      ddd.feed.renderHeadlines(ddd.feed.currentHeadlines);
       ddd.feed.replaceFeedUI(feed);
-      ddd.feeds.storeAgain(feed);
     },
 
     markArticleRead: function(article, index) {
@@ -921,30 +870,37 @@ dddns.ddd = function(w) {
 
       var feedsByMap = amplify.store('feeds-by-id');
       var feed = feedsByMap[ddd.feeds.currentID];
-      ddd.feed.updateFeedAndLsRemove(feed, index);
+      ddd.feed.updateFeed(feed, -1);
 
       // if the current feed is special also update the article's owner feed
       if (ddd.feeds.currentID < 0) {
         feed = feedsByMap[article.feed_id];
-        ddd.feed.updateFeedAndLsRemove(feed, -1);
+        ddd.feed.updateFeed(feed, -1);
       }
     },
 
     markFeedRead: function(feed) {
+      var i = 0,
+        unread = $all('#view-feed .unread'),
+        l = 0;
       feed.type = "read";
-      ddd.viewMode.vmMarkFeedRead(feed);
+      feed.unread = 0;
+      // need to mutate the read/unread state of articles
+      if (ddd.feed.currentHeadlines) {
+        for (l = ddd.feed.currentHeadlines.length; i < l; i++) {
+          ddd.feed.currentHeadlines[i].unread = false;
+        }
+      }
+      for (i = 0, l = unread.length; i < l; i++) {
+        unread[i].setAttribute('class', 'read');
+      }
+      ddd.feed.replaceFeedUI(feed);
     },
 
-    addArticleToUI: function(article) {
-      // when the article was marked read the feed count was NOT decremented
-      // in the store so no need to undo that
-      if (!article) return;
-      //if (ddd.feeds.currentID != article.feed_id) return;
-      var headlines = ddd.feed.currentHeadlines;
-      ddd.viewMode.vmAddArticleToHeadlines(article, headlines);
-      ddd.feed.renderHeadlines(headlines);
-    },
-
+    /*
+     * This updates the feed in the home view.
+     * The read/unread state and # of unread
+     */
     replaceFeedUI: function(feed) {
       feed.i = feed.index + 1;
       var html = ddd.feeds.markupFeed(feed),
@@ -1043,49 +999,18 @@ dddns.ddd = function(w) {
     cmd_nextArticle: function(dir) {
       if (ddd.currentView !== 'article') return;
       var sel = ddd.getSel('feed'),
-        unreadOnly = ddd.viewMode.isUnreadOnly(),
-        items, as, link;
-      if (dir == 1) {
-        // the article we're looking at has already been removed from currentHeadlines
-        // so its size has decreased by 1
-        if (!unreadOnly) {
-          sel.sel++;
-        }
-        var next_sel = sel.sel;
-        items = $all(sel.siz);
-        if (next_sel >= items.length) return;
-        as = items[next_sel].querySelectorAll('a');
-        if (!as || as.length === 0) return;
-        link = as[0];
-        if (link.classList.contains('more-link')) {
-          // click this link per normal but reset the sel since the more link replaces itself
-          // if you don't you'll skip the next article
-          if (!unreadOnly) {
-            sel.sel--;
-          }
-        }
-        link.click();
-      } else {
+        as, link,
+        items = ddd.moveSel(sel, dir);
+      if(!items) return;
+      as = items[sel.sel].querySelectorAll('a');
+      if (!as || as.length === 0) return;
+      link = as[0];
+      if (link.classList.contains('more-link')) {
+        // click this link per normal but reset the sel since the more link replaces itself
+        // if you don't you'll skip the next article
         sel.sel--;
-        if (sel.sel < 0) {
-          sel.sel = 0;
-          return;
-        }
-        var prev_sel = sel.sel;
-        items = $all(sel.siz);
-        if (prev_sel < 0) return;
-        as = items[prev_sel].querySelectorAll('a');
-        if (!as || as.length === 0) return;
-        link = as[0];
-        if (link.classList.contains('more-link')) {
-          // click this link per normal but reset the sel since the more link replaces itself
-          // if you don't you'll skip the next article
-          if (!unreadOnly) {
-            sel.sel--;
-          }
-        }
-        link.click();
       }
+      link.click();
     },
 
     cmd_markUnread: function() {
@@ -1108,11 +1033,16 @@ dddns.ddd = function(w) {
 
       var feedsByMap = amplify.store('feeds-by-id');
       var feed = feedsByMap[ddd.feeds.currentID];
-      ddd.feed.updateFeedAndLsAdd(feed, article, ddd.feeds.currentID);
+      ddd.feed.updateFeed(feed, 1);
+      
+      // advance the selection if marking unread from feed view
+      if (ddd.currentView === 'feed') {
+        ddd.cmd_move_sel(1);
+      }
 
       if (ddd.feeds.currentID < 0) {
         feed = feedsByMap[article.feed_id];
-        ddd.feed.updateFeedAndLsAdd(feed, null, article.feed_id);
+        ddd.feed.updateFeed(feed, 1);
       }
     },
   };
@@ -1134,51 +1064,22 @@ dddns.ddd = function(w) {
   };
 
   ddd.vmAll = {
-    markAllRead: function() {
-    },
-    removeArticleFromFeed: function(articleIndex) {
-    },
-    vmMarkFeedRead: function(feed) {
-      // need to mutate the read/unread state of articles
-      for (var i = 0, l = ddd.feed.currentHeadlines.length; i < l; i++) {
-        ddd.feed.currentHeadlines[i].unread = false;
-      }
-      var unread = $all('#view-feed .unread');
-      for (i = 0, l = unread.length; i < l; i++) {
-        unread[i].setAttribute('class', 'read');
-      }
-      ddd.feed.replaceFeedUI(feed);
-    },
-    vmAddArticleToHeadlines: function(article, headlines) {
+    markAllRead: function(feed) {
     },
     goHomeIfFeedIsEmpty: function() {
       return false;
     },
     isUnreadOnly: function() {
       return false;
-    }
+    },
   };
 
   ddd.vmOnlyUnread = {
-    markAllRead: function() {
+    markAllRead: function(feed) {
       ddd.feed.currentHeadlines = [];
+      ddd.feeds.removeFromStoreAndUI(feed);
       // if we marked all read from feed or article view go back to top
       if (ddd.currentView !== 'home') ruto.go('/');
-    },
-    removeArticleFromFeed: function(articleIndex) {
-      // remove the article from the list of headlines
-      if (articleIndex <= -1) return;
-      ddd.feed.currentHeadlines = ddd.remove(ddd.feed.currentHeadlines, articleIndex);
-    },
-    vmMarkFeedRead: function(feed) {
-      ddd.feeds.removeFromStoreAndUi(feed);
-      ddd.feeds.feedsRemoved[feed.id] = feed;
-    },
-    vmAddArticleToHeadlines: function(article, headlines) {
-      // only add the article if the view mode is unreadOnly since show read mode will 
-      // already have the article in the list
-      // i is the display index which is 1 based
-      headlines.splice(article.i - 1, 0, article); 
     },
     goHomeIfFeedIsEmpty: function() {
       var feed = ddd.getSelFeed(),
@@ -1189,7 +1090,7 @@ dddns.ddd = function(w) {
     },
     isUnreadOnly: function() {
       return true;
-    }
+    },
   };
 
   ddd.resetSelections = function() {
@@ -1243,8 +1144,7 @@ dddns.ddd = function(w) {
       ddd.cmd_open();
       return;
     }
-    var items = $(sel.siz);
-    if (!items.length) items = [items];
+    var items = $all(sel.siz);
     if (sel.sel < 0 || sel.sel >= items.length) return;
     var as = items[sel.sel].querySelectorAll('a');
     if (!as || as.length === 0) return;
@@ -1258,6 +1158,10 @@ dddns.ddd = function(w) {
       }
       sel.cur = next;
     }
+//    if (ddd.currentView === 'feed') {
+//      //advance selection to next headline since the headline is not being removed from the UI now
+//      ddd.moveSel(sel, 1);
+//    }
     as.trigger('click');
   };
 
@@ -1270,13 +1174,37 @@ dddns.ddd = function(w) {
       // instead of ruto.back() use this since if you view multiple articles via Shift-J up doesnt
       // really do what you want
       if (!ddd.feeds.currentID) return;
+      var sel = ddd.getSel('feed');
+      //advance selection to next headline since the headline is not being removed from the UI now
+      ddd.moveSel(sel, 1);
       if (ddd.feeds.currentID < 0)
         ruto.go('/feed/' + ddd.feeds.specialIdToName[-ddd.feeds.currentID]);
       else
         ruto.go('/feed/' + ddd.feeds.currentID);
       return;
     }
+    if (ddd.currentView === 'feed') {
+      // when going from feed to feeds clear headlines so if you reenter the same feed again
+      // it will request the headlines
+      ddd.feed.currentHeadlines = null;
+    }
     ruto.go('/');
+  };
+
+  ddd.moveSel = function(sel, dir) {
+    sel.sel = sel.sel + dir;
+    if (sel.sel < 0) {
+      sel.sel = 0;
+      return null;
+    }
+    var items = $all(sel.siz);
+    sel.items = items;
+    if (sel.sel >= items.length) {
+      sel.sel = items.length - 1;
+      return null;
+    }
+    if (items.length === 0 || sel.sel >= items.length) return null;
+    return items;
   };
 
   ddd.getSel = function(view) {
@@ -1297,8 +1225,7 @@ dddns.ddd = function(w) {
     var sel = ddd.getSel();
     var feedsById = amplify.store('feeds-by-id');
     if (sel.name === 'feeds') {
-      var selectors = $(sel.siz);
-      if (!selectors.length) selectors = [selectors];
+      var selectors = $all(sel.siz);
       var one = selectors[sel.sel];
       if (!one) return; // can happen when there are no feeds
       // id="feed-xxxxx"
@@ -1360,18 +1287,25 @@ dddns.ddd = function(w) {
   ddd.cmd_click_feed = function(target) {
     // if we're on the home view and click a feed set the selection
     // here so the clicked feed == selected feed
-    var sel = ddd.getSel('feeds');
-    if (sel) $(sel.siz).removeClass('sel');
+    var sel = ddd.getSel('feeds'),
+      i = 0,
+      clickedIndex = -1;
+    if (!sel) return;
+    var eles = $all(sel.siz);
     // unfortunatley the feed's index can not be used since the index does not adjust as feeds
     // are marked read so this search must be done
-    var all = $(sel.siz);
     // target is a an anchor, we need a li which is the parent
     // Sigh on Opera target is a div
     var ele = target.parentElement;
     if (ele.localName === 'a') {
       ele = ele.parentElement;
     }
-    var clickedIndex = all.indexOf(ele);
+    for(; i < eles.length; i++) {
+      eles[i].classList.remove('sel');
+      if(eles[i] === ele) {
+        clickedIndex = i;
+      }
+    }
     //console.log('clickedIndex is', clickedIndex);
     if (clickedIndex != -1) {
       sel.sel = clickedIndex;
@@ -1385,20 +1319,11 @@ dddns.ddd = function(w) {
       ddd.scrollPage(dir);
       return;
     }
-    sel.sel = sel.sel + dir;
-    if (sel.sel < 0) {
-      sel.sel = 0;
+    var items = ddd.moveSel(sel, dir);
+    if (!items) {
+      if (sel.items.length > 0) ddd.feed.showSelection();
       return;
     }
-    //items = $('dddlist').querySelectorAll('li');
-    var items = $(sel.siz);
-    if (!items.length) items = [items];
-
-    if (sel.sel >= items.length) {
-      sel.sel = items.length - 1;
-      return;
-    }
-    if (items.length === 0 || sel.sel >= items.length) return;
     items[sel.sel - dir].classList.remove('sel');
     items[sel.sel].classList.add('sel');
 
@@ -1459,6 +1384,7 @@ dddns.ddd = function(w) {
     }
   })
     .add('/', 'home', function() {
+    ddd.feeds.commitFeed();
     ddd.feed.showSelection();
   })
     .add('/about', 'about')

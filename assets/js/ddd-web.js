@@ -49,7 +49,8 @@ dddns.dddPlat = function(w) {
     ddd.feeds.more(e.target);
   });
   $('#view-home').on('click', function(e) {
-    if (e.target.localName !== 'li') return;
+    var localName = e.target.localName;
+    if (localName !== 'li' && localName !== 'a') return;
     ddd.cmd_click_feed(e.target);
   });
   $('body').on('keydown', function(e) {

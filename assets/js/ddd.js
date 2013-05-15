@@ -1170,7 +1170,16 @@ dddns.ddd = function(w) {
       // really do what you want
       if (!ddd.feeds.currentID) return;
       var sel = ddd.getSel('feed');
-      //advance selection to next headline since the headline is not being removed from the UI now
+      // erase current selection and 
+      // advance selection to next headline since the headline is not being removed from the UI
+      // the erase only needs to happen when viewing all since when viewing unread_only 
+      // the headline will be rerendered anyway
+      if (!ddd.settings.unread_only) {
+        var eles = $all(sel.siz);
+        if (sel.sel < eles.length) {
+          eles[sel.sel].classList.remove('sel');
+        }
+      }
       ddd.moveSel(sel, 1);
       if (ddd.feeds.currentID < 0)
         ruto.go('/feed/' + ddd.feeds.specialIdToName[-ddd.feeds.currentID]);
@@ -1287,6 +1296,10 @@ dddns.ddd = function(w) {
       clickedIndex = -1;
     if (!sel) return;
     var eles = $all(sel.siz);
+    // deselect the currently selected item
+    if (sel.sel < eles.length) {
+      eles[sel.sel].classList.remove('sel');
+    }
     // unfortunatley the feed's index can not be used since the index does not adjust as feeds
     // are marked read so this search must be done
     // target is a an anchor, we need a li which is the parent
@@ -1296,9 +1309,9 @@ dddns.ddd = function(w) {
       ele = ele.parentElement;
     }
     for(; i < eles.length; i++) {
-      eles[i].classList.remove('sel');
       if(eles[i] === ele) {
         clickedIndex = i;
+        break;
       }
     }
     //console.log('clickedIndex is', clickedIndex);

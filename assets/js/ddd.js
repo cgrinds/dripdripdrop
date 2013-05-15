@@ -668,8 +668,8 @@ dddns.ddd = function(w) {
       //ddd.pub('onStar', {article: article, feed: feed});
       if (ddd.currentView === "feed") {
         if (curId === -1) {
-          if (article.unread && !article.marked)
-            ddd.feed.updateFeed(feed, -1);
+          if (article.unread)
+            ddd.feed.updateFeed(feed, article.marked ? 1 : -1);
         } else {
           var html = ddd.feeds.markupHeadline(article),
             eles = $(sel.siz),
@@ -711,14 +711,7 @@ dddns.ddd = function(w) {
             newUnread = parseInt(newItem.unread, 10);
           if (newUnread != feed.unread) {
             feed.unread = newUnread;
-
-            var html = ddd.feeds.markupFeed(feed),
-              ele = $('#feed-' + feed.id),
-              parent = ele.parentNode,
-              tempDiv = document.createElement('div');
-
-            tempDiv.innerHTML = html;
-            parent.replaceChild(tempDiv.childNodes[0], ele);
+            ddd.feed.replaceFeedUI(feed);
           }
         }
         amplify.store('feeds', data);
@@ -873,10 +866,15 @@ dddns.ddd = function(w) {
       ddd.feed.updateFeed(feed, -1);
 
       // if the current feed is special also update the article's owner feed
-      if (ddd.feeds.currentID < 0) {
-        feed = feedsByMap[article.feed_id];
-        ddd.feed.updateFeed(feed, -1);
-      }
+      // actually don't this is problematic because updateFeed uses the headlines
+      // from special feeds not the parent feed
+      //if (ddd.feeds.currentID < 0) {
+      //  // only update the owner feed if it's visible
+      //  feed = feedsByMap[article.feed_id];
+      //  var ele = $('#feed-' + feed.id)
+      //  if (ele.length > 0)
+      //    ddd.feed.updateFeed(feed, -1);
+      //}
     },
 
     markFeedRead: function(feed) {
@@ -1043,6 +1041,7 @@ dddns.ddd = function(w) {
       if (ddd.feeds.currentID < 0) {
         feed = feedsByMap[article.feed_id];
         ddd.feed.updateFeed(feed, 1);
+        ddd.feed.showSelection();
       }
     },
   };

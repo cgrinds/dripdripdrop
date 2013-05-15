@@ -1158,10 +1158,6 @@ dddns.ddd = function(w) {
       }
       sel.cur = next;
     }
-//    if (ddd.currentView === 'feed') {
-//      //advance selection to next headline since the headline is not being removed from the UI now
-//      ddd.moveSel(sel, 1);
-//    }
     as.trigger('click');
   };
 
@@ -1343,7 +1339,6 @@ dddns.ddd = function(w) {
       toScroll.scrollTop = toScroll.scrollTop + inc;
       //console.log('inc scrollTopBy ' + inc + ' scrollTop=' + document.body.scrollTop);
     }
-    //$('body').scrollTop($('#questions').offset().top - 75);
   };
 
   function isScrolledIntoView(elem) {

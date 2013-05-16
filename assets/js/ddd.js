@@ -112,7 +112,7 @@ dddns.ddd = function(w) {
     },
 
     logout: function() {
-      ['feeds', 'feeds-by-id', 'feeds-sid'].forEach(function(key) {
+      ['feeds', 'feeds-by-id', 'feeds-sid', 'apiLevel', 'settings'].forEach(function(key) {
         localStorage.removeItem(key);
       });
       ruto.go('/login');
@@ -722,7 +722,6 @@ dddns.ddd = function(w) {
     commitFeed: function() {
       if(!ddd.feeds.currentID) return;
       var feed = amplify.store('feeds-by-id')[ddd.feeds.currentID];
-      console.log('in commit feed=', feed);
       if (!feed) return;
       if (feed.unread === 0) {
         ddd.viewMode.markAllRead(feed);
@@ -936,6 +935,7 @@ dddns.ddd = function(w) {
         // store the sid
         if (data.session_id) {
           amplify.store('feeds-sid', data.session_id);
+          amplify.store('apiLevel', data.api_level);
         }
         // emptying the div was the only reliable way to not have the input eat the keyevents
         $('#view-login .scroll').innerHTML = '';

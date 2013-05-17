@@ -410,7 +410,9 @@ dddns.ddd = function(w) {
         skip: "" + skipBy,
         limit: "" + ddd.config.article_limit,
       };
-
+      if (amplify.store('apiLevel') >= 7) {
+        msg.sanitize = false;
+      }
       ttrss.api(msg, function(_data) {
         if (ddd.feeds.currentID != feed_id) return;
         target.classList.remove('loading');
@@ -789,6 +791,9 @@ dddns.ddd = function(w) {
         view_mode: unreadOnly ? "unread" : "",
         limit: "" + ddd.config.article_limit,
       };
+      if (amplify.store('apiLevel') >= 7) {
+        msg.sanitize = false;
+      }
       ttrss.api(msg, function(data) {
         loadingHeadlines = false;
         if (ddd.feeds.currentID != id) return;

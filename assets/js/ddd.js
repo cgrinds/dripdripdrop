@@ -853,21 +853,25 @@ dddns.ddd = function(w) {
       ddd.feed.replaceFeedUI(feed);
     },
 
-    markArticleRead: function(article, index) {
-      if (!article) return;
-      if (!article.unread) return;
-      article.unread = false;
+    updateArticle: function(article, unread) {
+      article.unread = unread;
       var msg = {
         op          : "updateArticle",
         article_ids : "" + article.id,
-        mode        : "0",
+        mode        : unread ? "1" : "0",
         field       : "2"
       };
       ttrss.api(msg, function() {}, function() {});
 
       var feedsByMap = amplify.store('feeds-by-id');
       var feed = feedsByMap[ddd.feeds.currentID];
-      ddd.feed.updateFeed(feed, -1);
+      ddd.feed.updateFeed(feed, unread ? 1 : -1);
+    },
+
+    markArticleRead: function(article, index) {
+      if (!article) return;
+      if (!article.unread) return;
+      ddd.feed.updateArticle(article, false);
 
       // if the current feed is special also update the article's owner feed
       // actually don't this is problematic because updateFeed uses the headlines
@@ -1025,18 +1029,7 @@ dddns.ddd = function(w) {
       }
       if (!article) return;
       if (article.unread) return;
-      article.unread = true;
-      var msg = {
-        op          : "updateArticle",
-        article_ids : "" + article.id,
-        mode        : "1",
-        field       : "2"
-      };
-      ttrss.api(msg, function() {}, function() {});
-
-      var feedsByMap = amplify.store('feeds-by-id');
-      var feed = feedsByMap[ddd.feeds.currentID];
-      ddd.feed.updateFeed(feed, 1);
+      ddd.feed.updateArticle(article, true);
       
       // advance the selection if marking unread from feed view
       if (ddd.currentView === 'feed') {

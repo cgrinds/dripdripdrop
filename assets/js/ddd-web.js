@@ -67,12 +67,10 @@ dddns.dddPlat = function(w) {
     ddd.login.doLogin();
   });
   $('#view-home').on('click', function(e) {
-    if (!e.target.classList.contains('delete')) return;
-    ddd.feeds.removeFeedsInline(false);
-  });
-  $('#view-home').on('click', function(e) {
-    if (!e.target.classList.contains('cancel')) return;
-    ddd.feeds.removeFeedsInline(true);
+    var isDelete = e.target.classList.contains('delete'),
+      isCancel = e.target.classList.contains('cancel');
+    if (!isCancel && !isDelete) return;
+    ddd.feeds.removeFeedsInline(isCancel);
   });
 
   var addKeyboardShortcuts = function() {
@@ -109,7 +107,6 @@ dddns.dddPlat = function(w) {
       return false;
     });
     Mousetrap.bind('d d', function() {
-      //ddd.feeds.removeFeed();
       ddd.feeds.removeFeedInline();
       return false;
     });

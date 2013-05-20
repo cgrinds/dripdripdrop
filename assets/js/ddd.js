@@ -457,24 +457,23 @@ dddns.ddd = function(w) {
 
     escapePressed: function() {
       ddd.feeds.removeFeedsInline(true);
-      ddd.feed.showSelection();
     },
 
     removeFeedsInline: function(cancel) {
       var feed = ddd.feeds.feedToDelete;
       if (!feed) return;
       ddd.pub('onDialogDone');
-      if (cancel) {
-        var liEle = $('#feed-' + feed.id),
-          html = ddd.feeds.markupFeed(feed),
-          parent = liEle.parentNode,
-          tempDiv = document.createElement('div');
-
-        tempDiv.innerHTML = html;
-        parent.replaceChild(tempDiv.childNodes[0], liEle);
-        return;
+      if (!cancel) {
+        ddd.feeds.removeFeeds();
       }
-      ddd.feeds.removeFeeds(false);
+      var liEle = $('#feed-' + feed.id),
+        html = ddd.feeds.markupFeed(feed),
+        parent = liEle.parentNode,
+        tempDiv = document.createElement('div');
+
+      tempDiv.innerHTML = html;
+      parent.replaceChild(tempDiv.childNodes[0], liEle);
+      ddd.feed.showSelection();
     },
 
     removeFeeds: function() {
@@ -514,7 +513,7 @@ dddns.ddd = function(w) {
     removeFeedInline: function() {
       if (ddd.currentView !== 'home') return;
       var sel = ddd.getSel(),
-        ele = $(sel.siz)[sel.sel],
+        ele = $all(sel.siz)[sel.sel],
         feed = ddd.getSelFeed();
       if(feed.id < 0) return;
       feed.i = feed.index + 1;

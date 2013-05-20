@@ -130,6 +130,7 @@ dddns.ddd = function(w) {
       var onsuccess = function(data) {
         var response = data;
         console.log('<- ', response);
+        //console.log(JSON.stringify(response));
         if (response && !response.error) {
           if (response.content) {
             var loginError = 'error' in response.content;
@@ -1263,6 +1264,7 @@ dddns.ddd = function(w) {
         if (!to_open) return;
         ddd.feed.markArticleRead(article, sel.sel);
       }
+      ddd.feed.showSelection();
     }
     if (!to_open) return;
     opener.setAttribute('href', to_open);
@@ -1282,7 +1284,6 @@ dddns.ddd = function(w) {
       opener.dispatchEvent(evt);
     }
     if (ddd.viewMode.goHomeIfFeedIsEmpty()) return;
-    ddd.feed.showSelection();
   };
 
   ddd.cmd_click_feed = function(target) {

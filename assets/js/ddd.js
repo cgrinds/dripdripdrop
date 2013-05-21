@@ -236,30 +236,18 @@ dddns.ddd = function(w) {
       return tmpl('headline', vars);
     },
 
-    markupFeeds: function(data, i) {
-      var html = '',
-        markupFeed = ddd.feeds.markupFeed;
+    markupEach: function(data, i, markup) {
+      var html = '';
       if (!i) i = 1;
       data.forEach(function(item) {
         item.i = i++;
-        html += markupFeed(item);
-      });
-      return html;
-    },
-
-    markupHeadlines: function(data, i) {
-      var html = '',
-        markupHeadline = ddd.feeds.markupHeadline;
-      if (!i) i = 1;
-      data.forEach(function(item) {
-        item.i = i++;
-        html += markupHeadline(item);
+        html += markup(item);
       });
       return html;
     },
 
     feedsAndMore: function(data, i) {
-      var html = ddd.feeds.markupFeeds(data, i),
+      var html = ddd.feeds.markupEach(data, i, ddd.feeds.markupFeed),
         next;
       html += data.length >= ddd.config.FEED_LIMIT ?
         '<li><a class="more-link">More&hellip;<span class="loader"></span></a></li>' : '';
@@ -825,7 +813,7 @@ dddns.ddd = function(w) {
       ddd.feed.currentHeadlines = data;
       var moreOnPage = $('.more-link').length > 0;
       var html = '<ul class="tableview tableview-links" id="dddlist">' +
-        ddd.feeds.markupHeadlines(data) +
+        ddd.feeds.markupEach(data, 0, ddd.feeds.markupHeadline) + 
         (moreOnPage || data.length >= ddd.config.article_limit ?
         '<li><a class="more-link">More&hellip;<span class="loader"></span></a></li>' : '') +
         '</ul>';

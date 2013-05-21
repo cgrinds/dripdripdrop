@@ -7,6 +7,7 @@ module.exports = function(grunt) {
   var andWeb = [
       'assets/js/libs/mousetrap.js',
       'assets/js/libs/vimium.js',
+      'assets/js/libs/tinycon.js',
       'assets/js/footer_poll.js',
   ];
   var andIos = [

@@ -37,6 +37,7 @@ dddns.ddd = function(w) {
   var pubsubCache = {};
   var ddd = {
     pollRetries: 0,
+    totalUnread: 0,
     // PubSub
     pub: function(topic, data) {
       var t = pubsubCache[topic];
@@ -117,6 +118,16 @@ dddns.ddd = function(w) {
       });
       ruto.go('/login');
       ddd.login.render();
+    },
+
+    setFav: function(total) {
+      if (total < 0) total = 0;
+      ddd.totalUnread = total;
+      if(typeof Tinycon !== 'undefined') Tinycon.setBubble(total);
+    },
+
+    deltaFav: function(delta) {
+      ddd.setFav(ddd.totalUnread - delta);
     }
   };
 
@@ -304,14 +315,20 @@ dddns.ddd = function(w) {
             return;
           }
           var byId = {};
+          var total = 0;
           for (var i = 0, l = data.length; i < l; i++) {
             var item = data[i];
             item.index = i;
             byId[item.id] = item;
-            // sigh, special feeds return unread as a string instead of an int
-            if (item.id < 0)
+            if (typeof item.unread === 'string')
               item.unread = parseInt(item.unread, 10);
+            // an unread count that does not get decremented
+            // used to update favicon when marking a feed read
+            item.u = item.unread;
+            if (item.id > 0)
+              total += item.unread;
           }
+          ddd.setFav(total);
           amplify.store('feeds', data);
           amplify.store('feeds-by-id', byId);
           loadFeeds(data);
@@ -364,11 +381,21 @@ dddns.ddd = function(w) {
         var list = amplify.store('feeds');
         var feedsById = amplify.store('feeds-by-id');
         if (list) list.push.apply(list, data);
+        var total = 0;
         for (var i = 0, l = data.length; i < l; i++) {
           var item = data[i];
+          // sigh, special feeds return unread as a string instead of an int
+          if (item.id < 0)
+            item.unread = parseInt(item.unread, 10);
+          else
+            total += item.unread;
+          // an unread count that does not get decremented
+          // used to update favicon when marking a feed read
+          item.u = item.unread;
           item.index = i;
           feedsById[item.id] = item;
         }
+        setFav(total);
         amplify.store('feeds', list);
         amplify.store('feeds-by-id', feedsById);
         var html = ddd.feeds.feedsAndMore(data, ddd.feeds.skipFeeds + 1);
@@ -411,7 +438,7 @@ dddns.ddd = function(w) {
         if (!_data) return;
         var data = _data.slice();
         if (ddd.feed.currentHeadlines) ddd.feed.currentHeadlines.push.apply(ddd.feed.currentHeadlines, data);
-        var html = ddd.feeds.markupHeadlines(data, skipBy + 1);
+        var html = ddd.feeds.markupEach(data, skipBy + 1, ddd.feeds.markupHeadline);
         // do we still need more?
         html += data.length >= ddd.config.article_limit ?
           '<li><a class="more-link">More&hellip;<span class="loader"></span></a></li>' : 
@@ -438,6 +465,7 @@ dddns.ddd = function(w) {
       };
       ttrss.api(msg, function() {}, function() {});
 
+      ddd.deltaFav(curFeed.u);
       curFeed.unread = 0;
       ddd.viewMode.markAllRead(curFeed);
       ddd.feed.markFeedRead(curFeed);

@@ -458,7 +458,7 @@ dddns.ddd = function(w) {
 
     markAllRead: function() {
       var curFeed = ddd.getSelFeed();
-
+      if (!curFeed) return;
       var msg = {
         op: "catchupFeed",
         feed_id: "" + curFeed.id,

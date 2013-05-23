@@ -1095,6 +1095,7 @@ dddns.ddd = function(w) {
     markAllRead: function(feed) {
       ddd.feed.currentHeadlines = [];
       ddd.feeds.removeFromStoreAndUI(feed);
+      ddd.feed.currentHeadlines = null;
       // if we marked all read from feed or article view go back to top
       if (ddd.currentView !== 'home') ruto.go('/');
     },

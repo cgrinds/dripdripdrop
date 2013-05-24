@@ -324,62 +324,6 @@ dddns.ddd = function(w) {
       }
     },
 
-    moreFeeds: function(target) {
-      target.classList.add('loading');
-
-      var showError = function() {
-        var tmpl1 = tmpl('feeds-load');
-
-        var html = tmpl1.render({
-          load_error: true
-        }),
-          ele = target,
-          parent = ele.parentNode,
-          tempDiv = document.createElement('div');
-
-        tempDiv.innerHTML = html;
-        parent.replaceChild(tempDiv.childNodes[0], ele);
-        ddd.pub('logAPIError', 'news');
-      };
-
-      var unreadOnly = ddd.viewMode.isUnreadOnly(),
-        cat = ddd.settings.show_special_folders ? "-4" : "-3";
-      var msg = {
-        op: "getFeeds",
-        cat_id: cat,
-        unread_only: "" + unreadOnly,
-        limit: "" + ddd.config.FEED_LIMIT,
-        offset: "" + ddd.feeds.skipFeeds,
-      };
-      ttrss.api(msg, function(data) {
-        loadingFeeds = false;
-        target.classList.remove('loading');
-        var targetParent = target.parentNode;
-        if (!targetParent) return;
-        if (targetParent.parentNode) targetParent.parentNode.removeChild(targetParent);
-        if (!data || data.error) {
-          showError();
-          return;
-        }
-        var list = amplify.store('feeds');
-        var feedsById = amplify.store('feeds-by-id');
-        if (list) list.push.apply(list, data);
-        for (var i = 0, l = data.length; i < l; i++) {
-          var item = data[i];
-          item.index = i;
-          feedsById[item.id] = item;
-        }
-        amplify.store('feeds', list);
-        amplify.store('feeds-by-id', feedsById);
-        var html = ddd.feeds.feedsAndMore(data, ddd.feeds.skipFeeds + 1);
-        $('#feedslist').append(html);
-        ddd.feeds.skipFeeds += ddd.config.FEED_LIMIT;
-      }, function(e) {
-        loadingFeeds = false;
-        showError();
-      });
-    },
-
     more: function(target) {
       target.classList.add('loading');
       var feed_id = ddd.feeds.currentID,

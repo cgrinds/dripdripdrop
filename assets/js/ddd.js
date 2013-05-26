@@ -37,6 +37,7 @@ dddns.ddd = function(w) {
   var pubsubCache = {};
   var ddd = {
     pollRetries: 0,
+    totalUnread: 0,
     // PubSub
     pub: function(topic, data) {
       var t = pubsubCache[topic];
@@ -117,6 +118,18 @@ dddns.ddd = function(w) {
       });
       ruto.go('/login');
       ddd.login.render();
+    },
+
+    setFav: function(total) {
+      if (!ddd.settings.showBadge) return;
+      if (total < 0) total = 0;
+      ddd.totalUnread = total;
+      if(typeof Tinycon !== 'undefined') Tinycon.setBubble(total);
+    },
+
+    deltaFav: function(delta) {
+      if (!ddd.settings.showBadge) return;
+      ddd.setFav(ddd.totalUnread - delta);
     }
   };
 
@@ -304,14 +317,20 @@ dddns.ddd = function(w) {
             return;
           }
           var byId = {};
+          var total = 0;
           for (var i = 0, l = data.length; i < l; i++) {
             var item = data[i];
             item.index = i;
             byId[item.id] = item;
-            // sigh, special feeds return unread as a string instead of an int
-            if (item.id < 0)
+            if (typeof item.unread === 'string')
               item.unread = parseInt(item.unread, 10);
+            // an unread count that does not get decremented
+            // used to update favicon when marking a feed read
+            item.u = item.unread;
+            if (item.id > 0)
+              total += item.unread;
           }
+          ddd.setFav(total);
           amplify.store('feeds', data);
           amplify.store('feeds-by-id', byId);
           loadFeeds(data);
@@ -382,6 +401,7 @@ dddns.ddd = function(w) {
       };
       ttrss.api(msg, function() {}, function() {});
 
+      ddd.deltaFav(curFeed.u);
       curFeed.unread = 0;
       ddd.viewMode.markAllRead(curFeed);
       ddd.feed.markFeedRead(curFeed);
@@ -979,12 +999,14 @@ dddns.ddd = function(w) {
   ddd.settingsView = {
     render: function() {
       var settings = ddd.settings,
-        showSpecial = $('input[name="ddd:config:show_special_folders"]');
-
+        showSpecial = $('input[name="show_special_folders"]'),
+        showBadge = $('input[name="show_badge"]');
 
       showSpecial.checked = settings.show_special_folders;
+      showBadge.checked = settings.showBadge;
       $('#view-settings .save').on('click', function() {
         settings.show_special_folders = showSpecial.checked;
+        settings.showBadge = showBadge.checked;
 
         amplify.store('settings', settings);
         ruto.go('/');
@@ -1051,6 +1073,7 @@ dddns.ddd = function(w) {
       ddd.settings.unread_only = true;
       unreadOnly = true;
     }
+    if (ddd.settings.showBadge === undefined) ddd.settings.showBadge = true;
     ddd.viewMode = unreadOnly ? ddd.vmOnlyUnread : ddd.vmAll;
     
     ddd.login.render();

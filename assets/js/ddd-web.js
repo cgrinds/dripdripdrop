@@ -160,7 +160,9 @@ dddns.dddPlat = function(w) {
     Mousetrap.reset();
     addKeyboardShortcuts();
   });
-
+  ddd.sub('onRenderArticle', function(){
+    linkifyContainer($('#view-article .grouped-tableview'));
+  });
   addKeyboardShortcuts();
   ddd.init();
 

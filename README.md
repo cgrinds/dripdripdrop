@@ -37,7 +37,7 @@ Current Features
 <img src="http://gstaff.org/dripdripdrop/screenshots/keys.png">
 
 - when you mark a feed read, moves you back to the list of feeds instead of leaving you on a blank page
-- feed favicons
+- feed favicons with optional unread badge <img src="http://gstaff.org/dripdripdrop/screenshots/favbadge.png">
 - link to original article
 - mark article read/unread
 - show unread / read

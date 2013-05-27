@@ -824,6 +824,7 @@ dddns.ddd = function(w) {
       if (!article) return;
       if (!article.unread) return;
       ddd.feed.updateArticle(article, false);
+      ddd.deltaFav(1);
 
       // if the current feed is special also update the article's owner feed
       // actually don't this is problematic because updateFeed uses the headlines

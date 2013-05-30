@@ -15,6 +15,18 @@
 
     // only show unread feeds and articles
     unread_only: true,
+
+    // default = true
+    // Sanitize article content, there are pros and cons to sanitize=true
+    // At the moment, setting this to false has the following cons:
+    //  - breaks images, 
+    //  - plain-text linkification is disabled
+    //  - links no longer open in new tabs by default
+    //
+    //  the pro is embedded videos work
+    // By default the server assumes sanitize = true so there is no need to
+    // uncomment this unless you want to disable sanitize
+    //sanitizeContent: false,
   };
 
   window._ddd_config = config;

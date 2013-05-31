@@ -59,6 +59,7 @@ DripDripDrop is using:
 - ruto.js - `location.hash` router
 - [min.js](https://github.com/remy/min.js) - a tiny library for modern browsers
 - [Vimium](https://github.com/philc/vimium) - for link highlighting
+- [Tinycon](https://github.com/tommoor/tinycon) - favicon badge
 - iOS
 	- [Tappable](https://github.com/cheeaun/tappable) - touch-friendly tap events
 	- [Tween.js](https://github.com/sole/tween.js) - simple tweening engine

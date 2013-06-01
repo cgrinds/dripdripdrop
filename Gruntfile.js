@@ -131,6 +131,7 @@ module.exports = function(grunt) {
           'ruto': false,
           'TEMPLATES': false,
           'Node': false,
+          'Tinycon': false,
         },
       },
       all: [

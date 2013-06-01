@@ -990,7 +990,8 @@ dddns.ddd = function(w) {
       }
 
       if (ddd.feeds.currentID < 0) {
-        feed = feedsByMap[article.feed_id];
+        var feedsByMap = amplify.store('feeds-by-id'),
+          feed = feedsByMap[article.feed_id];
         ddd.feed.updateFeed(feed, 1);
         ddd.feed.showSelection();
       }

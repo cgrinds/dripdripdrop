@@ -346,7 +346,6 @@ dddns.ddd = function(w) {
     more: function(target) {
       target.classList.add('loading');
       var feed_id = ddd.feeds.currentID,
-        unreadOnly = ddd.viewMode.isUnreadOnly(),
         skipBy = ddd.feeds.skip;
         
       if (!feed_id) return;
@@ -354,17 +353,8 @@ dddns.ddd = function(w) {
         skipBy = ddd.feed.currentHeadlines.length;
       }
 
-      var msg = {
-        op: "getHeadlines",
-        feed_id: "" + feed_id,
-        show_content: "true",
-        view_mode: unreadOnly ? "unread" : "",
-        skip: "" + skipBy,
-        limit: "" + ddd.config.article_limit,
-      };
-      if (amplify.store('apiLevel') >= 7 && ddd.config.sanitizeContent !== undefined) {
-        msg.sanitize = ddd.config.sanitizeContent;
-      }
+      var msg = ddd.feed.getHeadlines(feed_id, skipBy);
+
       ttrss.api(msg, function(_data) {
         if (ddd.feeds.currentID != feed_id) return;
         target.classList.remove('loading');
@@ -730,22 +720,12 @@ dddns.ddd = function(w) {
       if (feed)
         ddd.feed.renderTitle(feed, '#view-feed h1');
 
-      var unreadOnly = ddd.viewMode.isUnreadOnly();
       loadingHeadlines = true;
       $('#view-feed .scroll').innerHTML = tmpl('feeds-load', {
         loading: true
       });
 
-      var msg = {
-        op: "getHeadlines",
-        feed_id: "" + id,
-        show_content: "true",
-        view_mode: unreadOnly ? "unread" : "",
-        limit: "" + ddd.config.article_limit,
-      };
-      if (amplify.store('apiLevel') >= 7 && ddd.config.sanitizeContent !== undefined) {
-        msg.sanitize = ddd.config.sanitizeContent;
-      }
+      var msg = ddd.feed.getHeadlines(id);
       ttrss.api(msg, function(data) {
         loadingHeadlines = false;
         if (ddd.feeds.currentID != id) return;
@@ -754,6 +734,23 @@ dddns.ddd = function(w) {
       }, function(e) {
         loadingHeadlines = false;
       });
+    },
+    
+    getHeadlines: function(feedID, skipBy) {
+      var unreadOnly = ddd.viewMode.isUnreadOnly(),
+        msg = {
+          op: "getHeadlines",
+          feed_id: "" + feedID,
+          show_content: "true",
+          view_mode: unreadOnly ? "unread" : "",
+          limit: "" + ddd.config.article_limit,
+        };
+      if (amplify.store('apiLevel') >= 7 && ddd.config.sanitizeContent !== undefined) {
+        msg.sanitize = ddd.config.sanitizeContent;
+      }
+      if (skipBy)
+        msg.skip = "" + skipBy;
+      return msg;
     },
 
     showSelection: function(view) {

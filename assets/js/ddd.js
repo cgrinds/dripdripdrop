@@ -951,6 +951,7 @@ dddns.ddd = function(w) {
 
       var tmpl1 = tmpl('article');
       $('#view-article .scroll').innerHTML = tmpl1.render(vars);
+      ddd.pub('onRenderArticle');
     },
 
     cmd_nextArticle: function(dir) {

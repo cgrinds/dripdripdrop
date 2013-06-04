@@ -160,6 +160,9 @@ dddns.dddPlat = function(w) {
     Mousetrap.reset();
     addKeyboardShortcuts();
   });
+  ddd.sub('onRenderArticle', function() {
+    ddd.scaleImages();
+  });
 
   addKeyboardShortcuts();
   ddd.init();

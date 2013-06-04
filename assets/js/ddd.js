@@ -130,7 +130,27 @@ dddns.ddd = function(w) {
     deltaFav: function(delta) {
       if (!ddd.settings.showBadge) return;
       ddd.setFav(ddd.totalUnread - delta);
-    }
+    },
+
+    scaleImages: function() {
+      if (!ddd.settings.scaleImages) return; 
+      var imgs = $all('.post-content .grouped-tableview img'),
+        viewWidth = $('#view-article').offsetWidth,
+        i = 0,
+        embiggen = function(img) {
+          return function() {
+            //console.log(img.width + ' vw ' + viewWidth + ' ' + img.offsetWidth + ' ' + img.src);
+            if (img.width > viewWidth) {
+              img.style.cssText = 'width:100%;height:100%';
+            }
+            img.onload = null;
+          }
+        };
+      for (;i < imgs.length; i++) {
+        var img = imgs[i];
+        img.onload = embiggen(img);
+      };
+    },
   };
 
   var timeout = 20000; // 20 seconds timeout
@@ -1000,13 +1020,17 @@ dddns.ddd = function(w) {
     render: function() {
       var settings = ddd.settings,
         showSpecial = $('input[name="show_special_folders"]'),
-        showBadge = $('input[name="show_badge"]');
+        showBadge = $('input[name="show_badge"]'),
+        scaleImages = $('input[name="scale_images"]');
 
       showSpecial.checked = settings.show_special_folders;
       showBadge.checked = settings.showBadge;
+      scaleImages.checked = settings.scaleImages;
+
       $('#view-settings .save').on('click', function() {
         settings.show_special_folders = showSpecial.checked;
         settings.showBadge = showBadge.checked;
+        settings.scaleImages = scaleImages.checked;
 
         amplify.store('settings', settings);
         ruto.go('/');
@@ -1074,6 +1098,7 @@ dddns.ddd = function(w) {
       unreadOnly = true;
     }
     if (ddd.settings.showBadge === undefined) ddd.settings.showBadge = true;
+    if (ddd.settings.scaleImages === undefined) ddd.settings.scaleImages = false;
     ddd.viewMode = unreadOnly ? ddd.vmOnlyUnread : ddd.vmAll;
     
     ddd.login.render();

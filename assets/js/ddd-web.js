@@ -42,6 +42,10 @@ dddns.dddPlat = function(w) {
   adjustViewsHeight();
 
   $('#view-feed').on('click', function(e) {
+    if (e.target.id === 'button-mfr') {
+     ddd.feeds.markAllRead();
+     return;
+    }
     if (!e.target.classList.contains('more-link')) return;
     ddd.feeds.more(e.target);
   });
@@ -67,6 +71,10 @@ dddns.dddPlat = function(w) {
     ddd.login.doLogin();
   });
   $('#view-home').on('click', function(e) {
+    if (e.target.id === 'button-mfr') {
+     ddd.feeds.markAllRead();
+     return;
+    }
     var isDelete = e.target.classList.contains('delete'),
       isCancel = e.target.classList.contains('cancel');
     if (!isCancel && !isDelete) return;

@@ -24,6 +24,9 @@ pre, code{
 button{
 	outline: 0;
 }
+.b2 {
+    left: 55px;
+}
 .normal {
     font-weight: normal;
 }
@@ -40,6 +43,16 @@ button{
 	width: 20px;
 	height: 20px;
 	background: transparent url(../images/web/white_gear.png) no-repeat;
+	background-size: 20px 20px;
+	vertical-align: text-bottom;
+	overflow: hidden;
+	text-indent: -999px;
+}
+.icon-mar{
+	display: inline-block;
+	width: 20px;
+	height: 20px;
+	background: transparent url(../images/web/markAllRead.png) no-repeat;
 	background-size: 20px 20px;
 	vertical-align: text-bottom;
 	overflow: hidden;

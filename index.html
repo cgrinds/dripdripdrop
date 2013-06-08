@@ -12,7 +12,6 @@
 <link rel="apple-touch-icon-precomposed" sizes="72x72" href="assets/icons/touch-icon-72.png">
 <link rel="apple-touch-icon-precomposed" href="assets/icons/touch-icon.png">
 
-<script src="assets/js/config.js"></script>
 <!-- prod cut begin -->
 <script src="assets/js/libs/hogan.js"></script>
 <script src="assets/js/templates.js"></script>
@@ -21,7 +20,6 @@
 <script src="assets/js/libs/mousetrap.js"></script>
 <script src="assets/js/libs/vimium.js"></script>
 <script src="assets/js/libs/tinycon.js"></script>
-<script src="assets/js/ddd.js"></script>
 <!--xxxx -->
 
 <script>
@@ -33,18 +31,22 @@
     window._ddd_theme = theme;
 	var head = d.head || d.getElementsByTagName('head')[0];
 
+    //XXX_toload
+    var load = ['assets/js/config.js', 'assets/js/ddd.js', 'assets/js/libs-', 'assets/js/ddd-'];
+    //XXX_toload_end
+    // Download together, execute in order as soon as all download.
+    // http://www.html5rocks.com/en/tutorials/speed/script-loading
+    load.forEach(function(name) {
+        var script = d.createElement('script');
+        script.async = false;
+        script.src = name;
+        if (name.indexOf('.js', name.length - 3) === -1) 
+            script.src = name + theme + '.js';
+        head.appendChild(script);
+    });
+    //XXX_min_cut_end
 	// Use document.write to prevent FOUC
 	d.write('<link rel="stylesheet" href="assets/css/ddd-' + theme + '.css">');
-    
-    //XXX_toload
-    var load = ['assets/js/libs-', 'assets/js/ddd-'];
-    //XXX_toload_end
-    for (var i = 0; i < load.length; i++) {
-        var script = d.createElement('script');
-        script.src = load[i] + theme + '.js';
-        head.insertBefore(script, head.lastChild);
-    }
-    //XXX_min_cut_end
 })(document, navigator.userAgent);
 </script>
 

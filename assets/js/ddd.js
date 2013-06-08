@@ -1395,17 +1395,3 @@ dddns.ddd = function(w) {
   });
 };
 //XXX TEMPLATES HERE
-if (!dddns.poll) {
-  var poll = function() {
-    if (dddns.dddPlat && dddns.ddd && dddns.lib) {
-      console.log('everything is loaded');
-      dddns.ddd(window);
-      dddns.dddPlat(window);
-      dddns.poll = 1;
-    } else {
-      window.setTimeout(dddns.poll, 75);
-    }
-  };
-  dddns.poll = poll;
-  window.setTimeout(poll, 75);
-}

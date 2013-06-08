@@ -183,7 +183,7 @@ module.exports = function(grunt) {
         dest: 'ddd.min/index.html',
         replacements: [{
             from: /\/\/XXX_toload(.|[\n\r])*\/\/XXX_toload_end/,
-            to: "var load = ['ddd.min.'];",
+            to: "var load = ['assets/js/config.js', 'ddd.min.'];",
           },
         ]
       },
@@ -192,7 +192,7 @@ module.exports = function(grunt) {
         dest: 'ddd.debug/index.html',
         replacements: [{
             from: /\/\/XXX_toload(.|[\n\r])*\/\/XXX_toload_end/,
-            to: "var load = ['ddd.'];",
+            to: "var load = ['assets/js/config.js', 'ddd.'];",
           },
         ]
       },

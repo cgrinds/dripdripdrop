@@ -179,16 +179,7 @@ dddns.dddPlat = function(w) {
     LinkHints.activateModeToOpenInNewTab();
   };
 };
-
-var poll = function() {
-  if (window._ddd_config) {
-    console.log('everything is loaded');
-    dddns.ddd(window);
-    dddns.dddPlat(window);
-    dddns.poll = 1;
-  } else {
-    setTimeout(dddns.poll, 75);
-  }
-};
-dddns.poll = poll;
-setTimeout(poll, 75);
+console.log('everything is loaded');
+dddns.ddd(window);
+dddns.dddPlat(window);
+dddns.poll = 1;

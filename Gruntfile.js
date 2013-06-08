@@ -289,6 +289,27 @@ module.exports = function(grunt) {
       }
     },
 
+    htmlmin: {
+      dist: {
+        options: {
+          removeComments: true,
+          removeCommentsFromCDATA: true,
+          removeCDATASectionsFromCDATA: true,
+          collapseWhitespace: true,
+          collapseBooleanAttributes: true,
+          removeAttributeQuotes: true,
+          removeRedundantAttributes: true,
+          useShortDoctype: true,
+          removeEmptyAttributes: true,
+          removeOptionalTags: true,
+          //removeEmptyElements: true,
+        },
+        files: {
+          'build/index.html': 'build/index.html',
+        },
+      }
+    },
+
   });
 
   grunt.loadNpmTasks('grunt-contrib-uglify');
@@ -298,12 +319,13 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-copy');
   grunt.loadNpmTasks('grunt-contrib-compress');
   grunt.loadNpmTasks('grunt-contrib-cssmin');
+  grunt.loadNpmTasks('grunt-contrib-htmlmin');
 
-  grunt.registerTask('prod', ['prod-debug', 'replace:index_web_min', 'uglify:web', 'uglify:ios', 'copy:prod',
-      'cssmin:web', 'cssmin:ios', 'replace:sourcemap', 'compress:dist'
+  grunt.registerTask('prod', ['prod-debug', 'replace:index_web_min', 'htmlmin:dist', 'uglify:web', 
+    'uglify:ios', 'copy:prod', 'cssmin:web', 'cssmin:ios', 'replace:sourcemap',  'compress:dist'
   ]);
 
   grunt.registerTask('prod-debug', ['replace:templates', 'replace:index_common', 'replace:index_web',
-      'concat:web_debug', 'concat:ios_debug', 'copy:debug', 'compress:debug'
+      'htmlmin:dist', 'concat:web_debug', 'concat:ios_debug', 'copy:debug', 'compress:debug'
   ]);
 };

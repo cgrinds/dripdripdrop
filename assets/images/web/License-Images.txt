@@ -3,3 +3,5 @@ http://www.iconfinder.com/icondetails/111096/512/star_icon
 http://creativecommons.org/licenses/by-sa/3.0/
 http://www.wpzoom.com
 
+markAllRead.png adapted from https://github.com/samuelclay/NewsBlur
+

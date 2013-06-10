@@ -144,12 +144,12 @@ dddns.ddd = function(w) {
               img.style.cssText = 'width:100%;height:100%';
             }
             img.onload = null;
-          }
+          };
         };
       for (;i < imgs.length; i++) {
         var img = imgs[i];
         img.onload = embiggen(img);
-      };
+      }
     },
   };
 

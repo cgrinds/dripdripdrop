@@ -241,6 +241,12 @@ dl.keyboard-mappings dd {
 	overflow: hidden;
 	word-wrap: normal;
 }
+#view-feed>header h1{
+    margin: 0 10px 0 100px;
+}
+#view-article>header h1{
+    margin: 0 10px 0 60px;
+}
 .view>.scroll{
 	overflow: hidden;
 	min-height: 85vh;
@@ -335,9 +341,6 @@ dl.keyboard-mappings dd {
 	background-color: #DAE6F6;
 }
 
-.tableview-links li>a:hover{
-	background-color: #F6F6EF;
-}
 .tableview-links li>a *{
 	pointer-events: none;
 }
@@ -749,7 +752,7 @@ div#vimiumFlash {
 	zoom: 1.0;
 }
 
-@media only screen and (min-width: 788px){
+@media only screen and (min-width: 788px) {
 	body{
 		background-color: #ebebe5;
 	}
@@ -765,4 +768,63 @@ div#vimiumFlash {
 		border-top-left-radius: 2px;
 		border-top-right-radius: 2px;
 	}
+}
+
+/*@media only screen and (min-device-width: 320px) and (max-device-width: 480px),*/
+@media only screen and (min-device-width: 320px) and (max-device-width: 1024px){
+.view>header{
+	background-color: #73A031;
+	line-height: 44px;
+	height: 44px;
+	color: #fff;
+}
+	body{
+		background-color: #ebebe5;
+	}
+    .view>header h1{
+        margin: 0 10px 0 132px;
+    }
+    #view-home>header h1{
+        margin: 0 10px 0 60px;
+    }
+    #view-feed>header h1{
+        margin: 0 10px 0 132px;
+    }
+	.view{
+		background-color: #fff;
+		max-width: 768px;
+		box-shadow: 0 2px 3px #aaa;
+		border-radius: 2px;
+		margin-top: 10px;
+		margin-bottom: 10px;
+	}
+	.view>header{
+		border-top-left-radius: 2px;
+		border-top-right-radius: 2px;
+	}
+    .header-button{
+        min-width: 57px;
+    }
+    .header-button button{
+        min-width: 57px;
+    }
+    .b2 {
+        left: 66px;
+    }
+    .tableview li{
+        display: block;
+        border-top: 1px solid #e0e0e0;
+        padding: 10px;
+        min-height: 50px;
+    }
+.tableview-links .fav{
+	top: 24px;
+}
+.tableview-links li>a{
+	padding: 0px;
+	height: 100%;
+}
+.tableview-links .feed{
+	padding-top: 13px;
+}
 }

@@ -790,6 +790,9 @@ div#vimiumFlash {
     #view-feed>header h1{
         margin: 0 10px 0 132px;
     }
+    #view-settings>header h1{
+        margin: 0 10px 0 12px;
+    }
 	.view{
 		background-color: #fff;
 		max-width: 768px;

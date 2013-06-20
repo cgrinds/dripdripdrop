@@ -1243,6 +1243,7 @@ dddns.ddd = function(w) {
         to_open = article.link;
         if (!to_open) return;
         ddd.feed.markArticleRead(article, sel.sel);
+        ddd.moveSel(sel, 1);
       }
       ddd.feed.showSelection();
     }

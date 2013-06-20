@@ -491,7 +491,9 @@ dddns.ddd = function(w) {
     },
 
     addFeed: function() {
-      $('#view-home h1').innerHTML = tmpl('add-feed', {});
+      var h1 = $('#view-home h1');
+      h1.innerHTML = tmpl('add-feed', {});
+      h1.style.margin = '0 0 0 100px';
     },
 
     addFeedClicked: function(cancel) {

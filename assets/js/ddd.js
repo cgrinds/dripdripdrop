@@ -117,6 +117,7 @@ dddns.ddd = function(w) {
         localStorage.removeItem(key);
       });
       ruto.go('/login');
+      ddd.setFav(0);
       ddd.login.render();
     },
 

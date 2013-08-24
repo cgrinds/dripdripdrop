@@ -753,6 +753,11 @@ dddns.ddd = function(w) {
         loadingHeadlines = false;
         if (ddd.feeds.currentID != id) return;
         ddd.feed.renderHeadlines(data);
+        // stale data - there are more headlines than we thought
+        if (feed.unread != data.length) {
+          feed.unread = data.length;
+          ddd.feed.updateFeed(feed, 0);
+        }
         ddd.feed.showSelection();
       }, function(e) {
         loadingHeadlines = false;

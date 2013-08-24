@@ -78,6 +78,7 @@ Prerequisites
 
     git clone https://github.com/cgrinds/dripdripdrop.git
     cd dripdripdrop
+    npm install -g grunt-cli
     npm install
     cp assets/js/config-dist.js assets/js/config.js
     node make-templates.js

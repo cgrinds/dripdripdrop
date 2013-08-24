@@ -106,7 +106,7 @@ dddns.dddPlat = function(w) {
       ddd.feeds.markAllRead();
       return false;
     });
-    Mousetrap.bind('g r', function() {
+    Mousetrap.bind(['r', 'g r'], function() {
       ddd.feeds.reload(true);
       return false;
     });

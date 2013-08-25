@@ -56,15 +56,19 @@
 	};
 
 	var removeFaviconTag = function(){
-
-		var links = document.getElementsByTagName('link');
+		//var links = document.getElementsByTagName('link');
+		var links = $('link');
 		var head = document.getElementsByTagName('head')[0];
 
 		for(var i=0, len=links.length; i < len; i++) {
-			var exists = (typeof(links[i]) !== 'undefined');
-			if (exists && (links[i].getAttribute('rel') || '').match(/\bicon\b/)) {
-				head.removeChild(links[i]);
-			}
+			var link = links[i],
+        exists = typeof(link) !== 'undefined';
+      if (link) {
+        var rel = link.getAttribute('rel') || '';
+        if (rel.match(/\bicon\b/)) {
+          head.removeChild(link);
+        }
+      }
 		}
 	};
 

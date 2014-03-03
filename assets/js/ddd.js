@@ -1234,14 +1234,17 @@ dddns.ddd = function(w) {
 
   ddd.cmd_open = function() {
     var opener = $('#opener'),
-      to_open;
+      to_open, comment_url;
     if (ddd.currentView === 'home') return;
     if (ddd.currentView === 'article') {
       var articleA = $('#full_article');
       if (!articleA) return;
       //$(to_open).click();
       to_open = articleA.getAttribute('href');
-      //return;
+      comment_url = ddd.open_comment_link(ddd.article.currentArticle);
+      if (comment_url) {
+        to_open = comment_url;
+      }
     } else if (ddd.currentView === 'feed') {
       var sel = ddd.getSel();
       if (sel === undefined) return;
@@ -1252,6 +1255,10 @@ dddns.ddd = function(w) {
         if (!to_open) return;
         ddd.feed.markArticleRead(article, sel.sel);
         ddd.moveSel(sel, 1);
+        comment_url = ddd.open_comment_link(article);
+        if (comment_url) {
+          to_open = comment_url;
+        }
       }
       ddd.feed.showSelection();
     }
@@ -1273,6 +1280,39 @@ dddns.ddd = function(w) {
       opener.dispatchEvent(evt);
     }
     if (ddd.viewMode.goHomeIfFeedIsEmpty()) return;
+  };
+  
+  ddd.open_comment_link = function(article) {
+    if (ddd.config.open_comment_urls === undefined || !ddd.config.open_comment_urls) {
+      return null;
+    }
+    // open comment link instead of article for these cases
+    var feed_url = ddd.getSelFeed().feed_url;
+    return ddd.find_comment_feed(feed_url, article);
+  };
+
+  ddd.find_comment_feed = function(feed_url, article) {
+    var i = 0,
+      j = 0,
+      w,
+      aas,
+      aa,
+      url;
+    for(; i < ddd.config.open_comment_urls.length; i++) {
+      url = ddd.config.open_comment_urls[i];
+      if (feed_url.match(new RegExp(url))) {
+        w = document.createElement('div');
+        w.innerHTML = article.content;
+        aas = w.querySelectorAll('a');
+        for(j = 0; j < aas.length; j++) {
+          aa = aas[j];
+          if (aa.innerHTML.match(/comment/i)) {
+            return aa.href;
+          }
+        }
+      }
+    }
+    return null;
   };
 
   ddd.cmd_click_feed = function(target) {

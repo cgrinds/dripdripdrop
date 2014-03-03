@@ -102,7 +102,7 @@ dddns.dddPlat = function(w) {
       ddd.cmd_open();
       return false;
     });
-    Mousetrap.bind('A', function() {
+    Mousetrap.bind(['A', 'n'], function() {
       ddd.feeds.markAllRead();
       return false;
     });

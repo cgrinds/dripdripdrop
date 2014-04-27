@@ -232,7 +232,7 @@ KeyboardUtils.dddKeys = function(e) {
         },
         simulateClick: function(element, modifiers) {
           if($.browser.firefox) {
-            $(element).attr('target', '_blank');
+            element.setAttribute('target', '_blank');
             element.click();
             return;
           } 

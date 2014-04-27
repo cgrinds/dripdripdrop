@@ -90,7 +90,7 @@ dddns.dddPlat = function(w) {
       ddd.cmd_move_sel(-1);
       return false;
     });
-    Mousetrap.bind('enter', function() {
+    Mousetrap.bind(['h', 'enter'], function() {
       ddd.cmd_enter();
       return false;
     });

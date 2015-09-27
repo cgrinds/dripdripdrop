@@ -100,7 +100,7 @@ Licensed under the [MIT License](http://cgrinds.mit-license.org).
 Other similar apps
 ------------------
 
-This is the not the first third-party client for Tiny Tiny RSS. There are many [others](http://tt-rss.org/redmine/projects/tt-rss/wiki/RelatedSoftware) and more all the time.
+This is not the first third-party client for Tiny Tiny RSS. There are many [others](http://tt-rss.org/redmine/projects/tt-rss/wiki/RelatedSoftware) and more all the time.
 
 What Google giveth, Google will taketh away.
 
